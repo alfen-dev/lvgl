@@ -29,8 +29,8 @@
 #define custom_print_cb LV_GLOBAL_DEFAULT()->custom_log_print_cb
 
 #if LV_LOG_USE_TIMESTAMP
-    #define LOG_TIMESTAMP_FMT  "\t(%" LV_PRIu32 ".%03" LV_PRIu32 ", +%" LV_PRIu32 ")\t"
-    #define LOG_TIMESTAMP_EXPR t / 1000, t % 1000, t - last_log_time,
+    #define LOG_TIMESTAMP_FMT  "\t(%" LV_PRIu32 ".%03" LV_PRIu32 ", +%*" LV_PRIu32 ")\t"
+    #define LOG_TIMESTAMP_EXPR t / 1000, t % 1000, 4, t - last_log_time,
 #else
     #define LOG_TIMESTAMP_FMT
     #define LOG_TIMESTAMP_EXPR
