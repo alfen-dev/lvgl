@@ -114,7 +114,7 @@ void lv_nemagfx_grad_set(NEMA_VG_GRAD_HANDLE gradient, lv_grad_dsc_t lv_grad, lv
     float stops[LV_GRADIENT_MAX_STOPS];
     color_var_t colors[LV_GRADIENT_MAX_STOPS];
 
-    uint32_t cnt = LV_MAX(lv_grad.stops_count, LV_GRADIENT_MAX_STOPS);
+    uint32_t cnt = LV_MIN(lv_grad.stops_count, LV_GRADIENT_MAX_STOPS);
 
     for(uint8_t i = 0; i < cnt; i++) {
         stops[i] = (float)(lv_grad.stops[i].frac) / 255.f;
