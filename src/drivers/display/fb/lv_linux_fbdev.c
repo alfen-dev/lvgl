@@ -6,6 +6,8 @@
 /*********************
  *      INCLUDES
  *********************/
+#include "../../../display/lv_display_private.h"
+
 #include "lv_linux_fbdev.h"
 #if LV_USE_LINUX_FBDEV
 
@@ -92,6 +94,9 @@ static uint32_t tick_get_cb(void);
     #define DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
 #endif
 
+#define LV_MALLOC_ZEROED(type) ((type*)lv_malloc_zeroed(sizeof(type)))
+#define LV_MALLOC(type) ((type*)lv_malloc(sizeof(type)))
+
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
@@ -100,7 +105,7 @@ lv_display_t * lv_linux_fbdev_create(void)
 {
     lv_tick_set_cb(tick_get_cb);
 
-    lv_linux_fb_t * dsc = lv_malloc_zeroed(sizeof(lv_linux_fb_t));
+    lv_linux_fb_t * dsc = LV_MALLOC_ZEROED(lv_linux_fb_t);
     LV_ASSERT_MALLOC(dsc);
     if(dsc == NULL) return NULL;
 
@@ -122,7 +127,7 @@ void lv_linux_fbdev_set_file(lv_display_t * disp, const char * file)
     LV_ASSERT_MALLOC(devname);
     if(devname == NULL) return;
 
-    lv_linux_fb_t * dsc = lv_display_get_driver_data(disp);
+    lv_linux_fb_t * dsc = (lv_linux_fb_t *)lv_display_get_driver_data(disp);
     dsc->devname = devname;
 
     if(dsc->fbfd > 0) close(dsc->fbfd);
@@ -226,10 +231,10 @@ void lv_linux_fbdev_set_file(lv_display_t * disp, const char * file)
 
     uint8_t * draw_buf = NULL;
     uint8_t * draw_buf_2 = NULL;
-    draw_buf = malloc(draw_buf_size);
+    draw_buf = (uint8_t*)malloc(draw_buf_size);
 
     if(LV_LINUX_FBDEV_BUFFER_COUNT == 2) {
-        draw_buf_2 = malloc(draw_buf_size);
+        draw_buf_2 = (uint8_t*)malloc(draw_buf_size);
     }
 
     lv_display_set_resolution(disp, hor_res, ver_res);
@@ -245,7 +250,7 @@ void lv_linux_fbdev_set_file(lv_display_t * disp, const char * file)
 
 void lv_linux_fbdev_set_force_refresh(lv_display_t * disp, bool enabled)
 {
-    lv_linux_fb_t * dsc = lv_display_get_driver_data(disp);
+    lv_linux_fb_t * dsc = (lv_linux_fb_t *)lv_display_get_driver_data(disp);
     dsc->force_refresh = enabled;
 }
 
@@ -266,7 +271,7 @@ static void write_to_fb(lv_linux_fb_t * dsc, uint32_t fb_pos, const void * data,
 
 static void flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * color_p)
 {
-    lv_linux_fb_t * dsc = lv_display_get_driver_data(disp);
+    lv_linux_fb_t * dsc = (lv_linux_fb_t *)lv_display_get_driver_data(disp);
 
 #if LV_LINUX_FBDEV_MMAP
     if(dsc->fbp == NULL) {
@@ -288,7 +293,7 @@ static void flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * colo
         /* (Re)allocate temporary buffer if needed */
         size_t buf_size = w * h * px_size;
         if(!dsc->rotated_buf || dsc->rotated_buf_size != buf_size) {
-            dsc->rotated_buf = realloc(dsc->rotated_buf, buf_size);
+            dsc->rotated_buf = (uint8_t *)realloc(dsc->rotated_buf, buf_size);
             dsc->rotated_buf_size = buf_size;
         }
 
