@@ -618,13 +618,14 @@ static void anim_timer(lv_timer_t * param)
 
             if(a->act_time >= 0) {
                 int32_t act_time_original = a->act_time; /*The unclipped version is used later to correctly repeat the animation*/
-                if(a->act_time > a->duration) a->act_time = a->duration;
+                if((a->act_time > a->duration) && (a->repeat_cnt != LV_ANIM_REPEAT_INFINITE)) a->act_time = a->duration;
 
                 int32_t act_time_before_exec = a->act_time;
                 int32_t new_value;
+                // Path calculation beyond a->duration and having LV_ANIM_REPEAT_INFINITE does not make sense...
                 new_value = a->path_cb(a);
 
-                if(new_value != a->current_value) {
+                if((new_value != a->current_value) || (a->repeat_cnt == LV_ANIM_REPEAT_INFINITE)) {
                     a->current_value = new_value;
                     /*Apply the calculated value*/
                     if(a->exec_cb) a->exec_cb(a->var, new_value);
