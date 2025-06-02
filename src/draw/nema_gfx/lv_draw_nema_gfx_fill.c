@@ -105,7 +105,7 @@ void lv_draw_nema_gfx_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, c
         float stops[LV_GRADIENT_MAX_STOPS];
         color_var_t colors[LV_GRADIENT_MAX_STOPS];
 
-        uint32_t cnt = LV_MAX(dsc->grad.stops_count, LV_GRADIENT_MAX_STOPS);
+        uint32_t cnt = LV_MIN(dsc->grad.stops_count, LV_GRADIENT_MAX_STOPS);
 
         for(uint8_t i = 0; i < cnt; i++) {
             stops[i] = (float)(dsc->grad.stops[i].frac) / 255.f;
