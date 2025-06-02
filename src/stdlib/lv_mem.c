@@ -41,6 +41,7 @@ void * lv_realloc_core(void * p, size_t new_size);
 void lv_free_core(void * p);
 void lv_mem_monitor_core(lv_mem_monitor_t * mon_p);
 lv_result_t lv_mem_test_core(void);
+void lv_mem_log_usage();
 
 /**********************
  *  STATIC VARIABLES
@@ -51,8 +52,10 @@ lv_result_t lv_mem_test_core(void);
  **********************/
 #if LV_USE_LOG && LV_LOG_TRACE_MEM
     #define LV_TRACE_MEM(...) LV_LOG_TRACE(__VA_ARGS__)
+    #define LV_TRACE_MEM_USAGE() lv_mem_log_usage()
 #else
     #define LV_TRACE_MEM(...)
+    #define LV_TRACE_MEM_USAGE()
 #endif
 
 /**********************
@@ -71,13 +74,7 @@ void * lv_malloc(size_t size)
 
     if(alloc == NULL) {
         LV_LOG_INFO("couldn't allocate memory (%lu bytes)", (unsigned long)size);
-#if LV_LOG_LEVEL <= LV_LOG_LEVEL_INFO
-        lv_mem_monitor_t mon;
-        lv_mem_monitor(&mon);
-        LV_LOG_INFO("used: %zu (%3d %%), frag: %3d %%, biggest free: %zu",
-                    mon.total_size - mon.free_size, mon.used_pct, mon.frag_pct,
-                    mon.free_biggest_size);
-#endif
+        lv_mem_log_usage();
         return NULL;
     }
 
@@ -86,6 +83,7 @@ void * lv_malloc(size_t size)
 #endif
 
     LV_TRACE_MEM("allocated at %p", alloc);
+    LV_TRACE_MEM_USAGE();
     return alloc;
 }
 
@@ -100,19 +98,15 @@ void * lv_malloc_zeroed(size_t size)
     void * alloc = lv_malloc_core(size);
     if(alloc == NULL) {
         LV_LOG_INFO("couldn't allocate memory (%lu bytes)", (unsigned long)size);
-#if LV_LOG_LEVEL <= LV_LOG_LEVEL_INFO
-        lv_mem_monitor_t mon;
-        lv_mem_monitor(&mon);
-        LV_LOG_INFO("used: %zu (%3d %%), frag: %3d %%, biggest free: %zu",
-                    mon.total_size - mon.free_size, mon.used_pct, mon.frag_pct,
-                    mon.free_biggest_size);
-#endif
+        lv_mem_log_usage();
         return NULL;
     }
 
     lv_memzero(alloc, size);
 
     LV_TRACE_MEM("allocated at %p", alloc);
+    LV_TRACE_MEM_USAGE();
+
     return alloc;
 }
 
@@ -160,10 +154,13 @@ void * lv_realloc(void * data_p, size_t new_size)
 
     if(new_p == NULL) {
         LV_LOG_ERROR("couldn't reallocate memory");
+        lv_mem_log_usage();
         return NULL;
     }
 
     LV_TRACE_MEM("reallocated at %p", new_p);
+    LV_TRACE_MEM_USAGE();
+
     return new_p;
 }
 
@@ -181,6 +178,16 @@ void lv_mem_monitor(lv_mem_monitor_t * mon_p)
 {
     lv_memzero(mon_p, sizeof(lv_mem_monitor_t));
     lv_mem_monitor_core(mon_p);
+}
+
+
+void lv_mem_log_usage()
+{
+    lv_mem_monitor_t mon;
+    lv_mem_monitor(&mon);
+    LV_LOG_INFO("used: %zu (%3d %%), frag: %3d %%, biggest free: %zu",
+                mon.total_size - mon.free_size, mon.used_pct, mon.frag_pct,
+                mon.free_biggest_size);
 }
 
 /**********************
