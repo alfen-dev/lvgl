@@ -171,6 +171,7 @@ void lv_font_set_kerning(lv_font_t * font, lv_font_kerning_t kerning)
 
 int32_t lv_font_get_line_height(const lv_font_t * font)
 {
+    LV_ASSERT_NULL(font);
     return font->line_height;
 }
 
