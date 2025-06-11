@@ -30,8 +30,8 @@ option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 ### INFO: When LV_BUILD_SET_CONFIG_OPTS is enabled - these options are set automatically
 ### based on lv_conf.h or Kconfig
 
-option(CONFIG_LV_BUILD_DEMOS "Build demos" ON)
-option(CONFIG_LV_BUILD_EXAMPLES "Build examples" ON)
+option(CONFIG_LV_BUILD_DEMOS "Build demos" OFF)
+option(CONFIG_LV_BUILD_EXAMPLES "Build examples" OFF)
 option(CONFIG_LV_USE_THORVG_INTERNAL "Use the internal version of ThorVG" ON)
 option(CONFIG_LV_USE_PRIVATE_API "If set - install the private headers" OFF)
 
@@ -62,8 +62,38 @@ file(GLOB_RECURSE SOURCES ${LVGL_ROOT_DIR}/src/*.c
                           ${LVGL_ROOT_DIR}/src/*.S)
 file(GLOB_RECURSE EXAMPLE_SOURCES ${LVGL_ROOT_DIR}/examples/*.c)
 file(GLOB_RECURSE DEMO_SOURCES ${LVGL_ROOT_DIR}/demos/*.c)
-file(GLOB_RECURSE THORVG_SOURCES ${LVGL_ROOT_DIR}/src/libs/thorvg/*.cpp
-                                 ${LVGL_ROOT_DIR}/src/others/vg_lite_tvg/*.cpp)
+file(GLOB_RECURSE THORVG_OTHER_SOURCES ${LVGL_ROOT_DIR}/src/others/vg_lite_tvg/*.cpp)
+
+file(GLOB_RECURSE THORVG_SRCS ${LVGL_ROOT_DIR}/src/libs/thorvg/*.cpp)
+
+set(THORVG_SOURCES "")
+set(THORVG_EXAMPLE_SOURCES "")
+
+foreach(f ${THORVG_SRCS})
+    if(f MATCHES "/examples/")
+        list(APPEND THORVG_EXAMPLE_SOURCES ${f})
+    elseif(f MATCHES "/wasm/")
+        #message("THORVG_SOURCES: ignoring ${f}")
+    elseif(f MATCHES "/external_jpg/")
+        #message("THORVG_SOURCES: ignoring ${f}")
+    elseif(f MATCHES "/external_webp/")
+        #message("THORVG_SOURCES: ignoring ${f}")
+    elseif(f MATCHES "/wg_engine/")
+        #message("THORVG_SOURCES: ignoring ${f}")
+    elseif(f MATCHES "/gl_engine/")
+        #message("THORVG_SOURCES: ignoring ${f}")
+    elseif(f MATCHES "/jerryscript/")
+        #message("THORVG_SOURCES: ignoring ${f}")
+    elseif(f MATCHES "/external_png/")
+        #message("THORVG_SOURCES: ignoring ${f}")
+    elseif(f MATCHES "/test/")
+        #message("THORVG_SOURCES: ignoring ${f}")
+    else()
+        list(APPEND THORVG_SOURCES ${f})
+    endif()
+endforeach()
+
+
 
 # Build LVGL library
 add_library(lvgl ${SOURCES})
@@ -202,6 +232,22 @@ endif()
 include_directories(${CONF_INC_DIR} ${LVGL_ROOT_DIR})
 
 target_include_directories(lvgl SYSTEM PUBLIC ${LVGL_ROOT_DIR} ${CONF_INC_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+if(CONFIG_LV_USE_THORVG_INTERNAL)
+    target_include_directories(lvgl PRIVATE ${LVGL_ROOT_DIR}/src/libs/thorvg)
+    target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg)
+    target_include_directories(lvgl SYSTEM PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg)
+
+    target_include_directories(lvgl PRIVATE ${LVGL_ROOT_DIR}/src/libs/thorvg)
+    target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg)
+    target_include_directories(lvgl SYSTEM PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg)
+
+    target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg)
+    target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg/inc)
+    target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg/src/bindings/capi)
+    target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg/src/common)
+    target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg/src/renderer)
+    target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR}/src/libs/thorvg/src/loaders/lottie)
+endif()
 
 # Propagate the compiler definitions set on LVGL to the rest of the targets
 # mentioned in this file
@@ -210,9 +256,11 @@ get_target_property(COMP_DEF lvgl COMPILE_DEFINITIONS)
 if(CONFIG_LV_USE_THORVG_INTERNAL)
     message(STATUS "Enabling the building of ThorVG internal")
 
-    add_library(lvgl_thorvg ${THORVG_SOURCES})
+    add_library(lvgl_thorvg ${THORVG_SOURCES} ${THORVG_OTHER_SOURCES})
     add_library(lvgl::thorvg ALIAS lvgl_thorvg)
-    target_include_directories(lvgl_thorvg PRIVATE ${LVGL_ROOT_DIR}/src/libs/thorvg)
+    target_include_directories(lvgl_thorvg PRIVATE 
+            ${LVGL_ROOT_DIR}/src/libs/thorvg
+            ${LVGL_ROOT_DIR}/src/libs/thorvg/src)
     set_target_properties(lvgl_thorvg PROPERTIES COMPILE_DEFINITIONS "${COMP_DEF}")
 
     # This tells cmake to link lvgl with lvgl_thorvg
@@ -233,21 +281,21 @@ endif()
 if(CONFIG_LV_BUILD_EXAMPLES)
 
     message(STATUS "Enabling the building of examples")
-
-    add_library(lvgl_examples ${EXAMPLE_SOURCES})
-    add_library(lvgl::examples ALIAS lvgl_examples)
-    target_include_directories(lvgl_examples SYSTEM PUBLIC ${LVGL_ROOT_DIR}/examples)
-    set_target_properties(lvgl_examples PROPERTIES COMPILE_DEFINITIONS "${COMP_DEF}")
-
-    # This tells cmake to link lvgl with lvgl_examples
-    # PUBLIC allows code linking with LVGL to also use the library
-    # The linker will resolve all dependencies when dynamic linking 
-    target_link_libraries(lvgl PUBLIC lvgl_examples)
-
-    # During static linking, we need to create a cyclic dependency as the examples also needs lvgl
-    if (NOT BUILD_SHARED_LIBS)
-        target_link_libraries(lvgl_examples PRIVATE lvgl)
-    endif()
+    
+    # add_library(lvgl_examples ${EXAMPLE_SOURCES} ${THORVG_EXAMPLE_SOURCES})
+    # add_library(lvgl::examples ALIAS lvgl_examples)
+    # target_include_directories(lvgl_examples SYSTEM PUBLIC ${LVGL_ROOT_DIR}/examples)
+    # set_target_properties(lvgl_examples PROPERTIES COMPILE_DEFINITIONS "${COMP_DEF}")
+    # 
+    # # This tells cmake to link lvgl with lvgl_examples
+    # # PUBLIC allows code linking with LVGL to also use the library
+    # # The linker will resolve all dependencies when dynamic linking 
+    # target_link_libraries(lvgl PUBLIC lvgl_examples)
+    # 
+    # # During static linking, we need to create a cyclic dependency as the examples also needs lvgl
+    # if (NOT BUILD_SHARED_LIBS)
+    #     target_link_libraries(lvgl_examples PRIVATE lvgl)
+    # endif()
 
 endif()
 
@@ -256,22 +304,22 @@ if(CONFIG_LV_BUILD_DEMOS)
 
     message(STATUS "Enabling the building of demos")
 
-    add_library(lvgl_demos ${DEMO_SOURCES})
-    add_library(lvgl::demos ALIAS lvgl_demos)
-    target_include_directories(lvgl_demos SYSTEM PUBLIC ${LVGL_ROOT_DIR}/demos)
-    set_target_properties(lvgl_demos PROPERTIES COMPILE_DEFINITIONS "${COMP_DEF}")
-
-    # This tells cmake to link lvgl with lvgl_examples
-    # PUBLIC allows code linking with LVGL to also use the library
-    # The linker will resolve all dependencies when dynamic linking 
-    target_link_libraries(lvgl PUBLIC lvgl_demos)
-
-    # During static linking, we need to create a cyclic dependency as the demos also needs lvgl
-    if (NOT BUILD_SHARED_LIBS)
-        # If static linking - demos depends on fonts defined in lvgl
-        # During dynamic linking, the linker is able to resolve everything
-        target_link_libraries(lvgl_demos PRIVATE lvgl)
-    endif()
+    # add_library(lvgl_demos ${DEMO_SOURCES})
+    # add_library(lvgl::demos ALIAS lvgl_demos)
+    # target_include_directories(lvgl_demos SYSTEM PUBLIC ${LVGL_ROOT_DIR}/demos)
+    # set_target_properties(lvgl_demos PROPERTIES COMPILE_DEFINITIONS "${COMP_DEF}")
+    # 
+    # # This tells cmake to link lvgl with lvgl_examples
+    # # PUBLIC allows code linking with LVGL to also use the library
+    # # The linker will resolve all dependencies when dynamic linking 
+    # target_link_libraries(lvgl PUBLIC lvgl_demos)
+    # 
+    # # During static linking, we need to create a cyclic dependency as the demos also needs lvgl
+    # if (NOT BUILD_SHARED_LIBS)
+    #     # If static linking - demos depends on fonts defined in lvgl
+    #     # During dynamic linking, the linker is able to resolve everything
+    #     target_link_libraries(lvgl_demos PRIVATE lvgl)
+    # endif()
 
 endif()
 
@@ -381,21 +429,21 @@ if(CONFIG_LV_BUILD_DEMOS)
         FILES_MATCHING
         PATTERN "*.h")
 
-    set_target_properties(
-        lvgl_demos
-        PROPERTIES OUTPUT_NAME lvgl_demos
-        VERSION ${LVGL_VERSION}
-        SOVERSION ${LVGL_SOVERSION}
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-        PUBLIC_HEADER "${LVGL_PUBLIC_HEADERS}")
-
-    install(
-        TARGETS lvgl_demos
-        ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
-        LIBRARY DESTINATION "${LIB_INSTALL_DIR}"
-        RUNTIME DESTINATION "${RUNTIME_INSTALL_DIR}"
-        PUBLIC_HEADER DESTINATION "${INC_INSTALL_DIR}")
+    # set_target_properties(
+    #     lvgl_demos
+    #     PROPERTIES OUTPUT_NAME lvgl_demos
+    #     VERSION ${LVGL_VERSION}
+    #     SOVERSION ${LVGL_SOVERSION}
+    #     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+    #     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+    #     PUBLIC_HEADER "${LVGL_PUBLIC_HEADERS}")
+    # 
+    # install(
+    #     TARGETS lvgl_demos
+    #     ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
+    #     LIBRARY DESTINATION "${LIB_INSTALL_DIR}"
+    #     RUNTIME DESTINATION "${RUNTIME_INSTALL_DIR}"
+    #     PUBLIC_HEADER DESTINATION "${INC_INSTALL_DIR}")
 
 endif()
 
@@ -407,21 +455,21 @@ if(CONFIG_LV_BUILD_EXAMPLES)
         FILES_MATCHING
         PATTERN "*.h")
 
-    set_target_properties(
-        lvgl_examples
-        PROPERTIES OUTPUT_NAME lvgl_examples
-        VERSION ${LVGL_VERSION}
-        SOVERSION ${LVGL_SOVERSION}
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-        PUBLIC_HEADER "${LVGL_PUBLIC_HEADERS}")
-
-    install(
-        TARGETS lvgl_examples
-        ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
-        LIBRARY DESTINATION "${LIB_INSTALL_DIR}"
-        RUNTIME DESTINATION "${RUNTIME_INSTALL_DIR}"
-        PUBLIC_HEADER DESTINATION "${INC_INSTALL_DIR}")
+    # set_target_properties(
+    #     lvgl_examples
+    #     PROPERTIES OUTPUT_NAME lvgl_examples
+    #     VERSION ${LVGL_VERSION}
+    #     SOVERSION ${LVGL_SOVERSION}
+    #     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+    #     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+    #     PUBLIC_HEADER "${LVGL_PUBLIC_HEADERS}")
+    # 
+    # install(
+    #     TARGETS lvgl_examples
+    #     ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
+    #     LIBRARY DESTINATION "${LIB_INSTALL_DIR}"
+    #     RUNTIME DESTINATION "${RUNTIME_INSTALL_DIR}"
+    #     PUBLIC_HEADER DESTINATION "${INC_INSTALL_DIR}")
 
 endif()
 
