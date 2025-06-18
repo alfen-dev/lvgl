@@ -1,0 +1,3 @@
+[submodule "src/libs/thorvg"]
+	path = src/libs/thorvg
+	url = git@github.com:alfen-dev/thorvg.git
