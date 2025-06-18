@@ -251,7 +251,7 @@ typedef union {
  */
 typedef struct {
     uint32_t length;
-    uint8_t data[1];
+    uint8_t* data;
 } lv_svg_attr_values_list_t;
 
 /* https://www.w3.org/TR/SVGTiny12/svgudomidl.html */
