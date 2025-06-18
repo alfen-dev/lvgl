@@ -20,7 +20,7 @@
     #if LV_USE_THORVG_EXTERNAL
         #include <thorvg_capi.h>
     #else
-        #include "../../libs/thorvg/thorvg_capi.h"
+        #include "../../libs/thorvg/src/bindings/capi/thorvg_capi.h"
     #endif
 #endif
 
@@ -98,10 +98,10 @@ void lv_draw_sw_init(void)
 
 #if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
     if(LV_DRAW_SW_DRAW_UNIT_CNT > 1) {
-        tvg_engine_init(TVG_ENGINE_SW, LV_DRAW_SW_DRAW_UNIT_CNT);
+        tvg_engine_init(LV_DRAW_SW_DRAW_UNIT_CNT);
     }
     else {
-        tvg_engine_init(TVG_ENGINE_SW, 0);
+        tvg_engine_init(0);
     }
 #endif
 
@@ -111,7 +111,7 @@ void lv_draw_sw_init(void)
 void lv_draw_sw_deinit(void)
 {
 #if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
-    tvg_engine_term(TVG_ENGINE_SW);
+    tvg_engine_term();
 #endif
 
 #if LV_DRAW_SW_COMPLEX == 1
@@ -416,7 +416,7 @@ static void execute_drawing(lv_draw_task_t * t)
             break;
 #if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
         case LV_DRAW_TASK_TYPE_VECTOR:
-            lv_draw_sw_vector(t, t->draw_dsc);
+            lv_draw_sw_vector(t, t->draw_dsc, lv_color32_make(0, 0, 0, 0)/*Transparent or black*/);
             break;
 #endif
         default:

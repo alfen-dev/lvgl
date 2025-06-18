@@ -611,7 +611,7 @@ static const char * _parse_color(const char * str, const char * str_end, uint32_
     return ++ptr;
 }
 
-static void _multiply_matrix(lv_svg_matrix_t * matrix, const lv_svg_matrix_t * mul)
+void lv_svg_matrix_multiply(lv_svg_matrix_t * matrix, const lv_svg_matrix_t * mul)
 {
     // TODO: use NEON to optimize this function on ARM architecture.
     lv_svg_matrix_t tmp;
@@ -656,7 +656,7 @@ static const char * _parse_matrix(const char * str, const char * str_end, lv_svg
                     }
                 };
 
-                _multiply_matrix(matrix, &mt);
+                lv_svg_matrix_multiply(matrix, &mt);
             }
             break;
         case LV_SVG_TRANSFORM_TYPE_TRANSLATE: {
@@ -678,7 +678,7 @@ static const char * _parse_matrix(const char * str, const char * str_end, lv_svg
                     }
                 };
 
-                _multiply_matrix(matrix, &tlm);
+                lv_svg_matrix_multiply(matrix, &tlm);
             }
             break;
         case LV_SVG_TRANSFORM_TYPE_ROTATE: {
@@ -711,7 +711,7 @@ static const char * _parse_matrix(const char * str, const char * str_end, lv_svg
                 };
 
                 if(!trans) {
-                    _multiply_matrix(matrix, &rtm);
+                    lv_svg_matrix_multiply(matrix, &rtm);
                 }
                 else {
                     lv_svg_matrix_t tlm = {{
@@ -721,12 +721,12 @@ static const char * _parse_matrix(const char * str, const char * str_end, lv_svg
                         }
                     };
 
-                    _multiply_matrix(matrix, &tlm);
-                    _multiply_matrix(matrix, &rtm);
+                    lv_svg_matrix_multiply(matrix, &tlm);
+                    lv_svg_matrix_multiply(matrix, &rtm);
 
                     tlm.m[0][2] = -cx;
                     tlm.m[1][2] = -cy;
-                    _multiply_matrix(matrix, &tlm);
+                    lv_svg_matrix_multiply(matrix, &tlm);
                 }
             }
             break;
@@ -751,7 +751,7 @@ static const char * _parse_matrix(const char * str, const char * str_end, lv_svg
                     }
                 };
 
-                _multiply_matrix(matrix, &scm);
+                lv_svg_matrix_multiply(matrix, &scm);
             }
             break;
         case LV_SVG_TRANSFORM_TYPE_SKEW_X: {
@@ -770,7 +770,7 @@ static const char * _parse_matrix(const char * str, const char * str_end, lv_svg
                     }
                 };
 
-                _multiply_matrix(matrix, &skm);
+                lv_svg_matrix_multiply(matrix, &skm);
             }
             break;
         case LV_SVG_TRANSFORM_TYPE_SKEW_Y: {
@@ -789,7 +789,7 @@ static const char * _parse_matrix(const char * str, const char * str_end, lv_svg
                     }
                 };
 
-                _multiply_matrix(matrix, &skm);
+                lv_svg_matrix_multiply(matrix, &skm);
             }
             break;
     }
@@ -1814,6 +1814,10 @@ static void _process_anim_attr_options(lv_svg_node_t * node, lv_svg_attr_type_t 
                     attr->value.ival = LV_SVG_TRANSFORM_TYPE_SKEW_Y;
                     return;
                 }
+                else if(len == 6 && strncmp(val_start, "matrix", 6) == 0) {
+                    attr->value.ival = LV_SVG_TRANSFORM_TYPE_MATRIX;
+                    return;
+                }
             }
             break;
     }
@@ -1835,14 +1839,17 @@ static void _parse_anim_value(lv_svg_node_t * node, lv_svg_attr_t * attr, const 
     }
     else if(node->type == LV_SVG_TAG_ANIMATE_TRANSFORM) {
         attr->val_type = LV_SVG_ATTR_VALUE_PTR;
-        lv_svg_attr_values_list_t * list = lv_malloc(sizeof(float) * 4 + sizeof(uint32_t));
+        // Type matrix has 6 values
+        // https://docs.aspose.com/svg/net/drawing-basics/transformation-matrix/
+        const uint32_t max_nr_of_values = 6;
+        lv_svg_attr_values_list_t * list = lv_malloc_zeroed(sizeof(float) * max_nr_of_values + sizeof(uint32_t));
         LV_ASSERT_MALLOC(list);
 
         float val_number = 0.0f;
         uint32_t cnt = 0;
         const char * ptr = val_start;
 
-        while((ptr < val_end) && (cnt < 3)) {
+        while((ptr < val_end) && (cnt < max_nr_of_values)) {
             float * val = (float *)(&list->data) + cnt;
 
             val_number = 0.0f;

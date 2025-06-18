@@ -31,7 +31,7 @@ extern "C" {
 #if LV_USE_THORVG_EXTERNAL
 #include <thorvg_capi.h>
 #else
-#include "../../libs/thorvg/thorvg_capi.h"
+#include "../../libs/thorvg/src/bindings/capi/thorvg_capi.h"
 #endif
 
 typedef struct {

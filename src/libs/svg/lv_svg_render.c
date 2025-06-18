@@ -492,7 +492,7 @@ static void _set_polygon_attr(lv_svg_render_obj_t * obj, lv_vector_draw_dsc_t * 
     }
 }
 
-static size_t _get_path_seg_size(uint32_t cmd)
+size_t lv_svg_attr_path_get_seg_size(uint32_t cmd)
 {
     switch(cmd) {
         case LV_SVG_PATH_CMD_MOVE_TO:
@@ -562,7 +562,7 @@ static void _set_path_attr(lv_svg_render_obj_t * obj, lv_vector_draw_dsc_t * dsc
                     }
                     break;
             }
-            size_t mem_inc = _get_path_seg_size(cmd);
+            size_t mem_inc = lv_svg_attr_path_get_seg_size(cmd);
             data_ptr += mem_inc;
         }
     }
@@ -1019,6 +1019,53 @@ static void _copy_draw_dsc_from_ref(lv_vector_dsc_t * dsc, const lv_svg_render_o
         }
     }
 }
+
+
+void lv_svg_attr_copy(const lv_svg_attr_t* attr_src, lv_svg_attr_t* attr_dst)
+{
+    attr_dst->class_type = attr_src->class_type;
+    attr_dst->id         = attr_src->id        ;
+    attr_dst->val_type   = attr_src->val_type  ;
+    attr_dst->value      = attr_src->value     ;
+}
+
+void lv_svg_attr_swap(lv_svg_attr_t * attr_a, lv_svg_attr_t * attr_b)
+{
+    lv_svg_attr_t attr;
+    lv_svg_attr_copy(attr_a, &attr);
+    lv_svg_attr_copy(attr_b, attr_a);
+    lv_svg_attr_copy(&attr , attr_b);
+}
+
+void lv_svg_render_fix(lv_svg_node_t * svg_doc)
+{
+	// Because in _set_viewport_attr calculation LV_SVG_ATTR_VIEWBOX
+    // depends on 
+    // LV_SVG_ATTR_WIDTH and LV_SVG_ATTR_HEIGHT
+    // have them correctly ordered!
+    // This by swapping LV_SVG_ATTR_VIEWBOX so it is last in order
+
+	int32_t viewbox_index = -1;
+
+    uint32_t len = lv_array_size(&svg_doc->attrs);
+    for(uint32_t i = 0; i < len; i++) {
+        lv_svg_attr_t * attr = lv_array_at(&svg_doc->attrs, i);
+        if (attr->id == LV_SVG_ATTR_VIEWBOX)
+        {
+            // LV_SVG_ATTR_VIEWBOX is found and when LV_SVG_ATTR_WIDTH and/or LV_SVG_ATTR_HEIGHT
+            // are higher in order, swap them...
+            viewbox_index = (int32_t)i;
+        }
+        if (((attr->id == LV_SVG_ATTR_WIDTH) || (attr->id == LV_SVG_ATTR_HEIGHT)) &&
+            ((viewbox_index >= 0) && (viewbox_index < (int32_t)i)))
+        {
+            // Switch with viewbox attr (so LV_SVG_ATTR_VIEWBOX is now last)
+            lv_svg_attr_swap(attr, lv_array_at(&svg_doc->attrs, viewbox_index));
+            viewbox_index = (int32_t)i;
+        }
+    }
+}
+
 
 static void _set_render_attrs(lv_svg_render_obj_t * obj, const lv_svg_node_t * node,
                               struct _lv_svg_drawing_builder_state * state)

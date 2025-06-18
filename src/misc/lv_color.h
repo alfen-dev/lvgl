@@ -234,8 +234,9 @@ typedef enum {
 
 #define LV_COLOR_MAKE(r8, g8, b8) {b8, g8, r8}
 
-#define LV_OPA_MIX2(a1, a2) ((lv_opa_t)(((int32_t)(a1) * (a2)) >> 8))
-#define LV_OPA_MIX3(a1, a2, a3) ((lv_opa_t)(((int32_t)(a1) * (a2) * (a3)) >> 16))
+// Prevent (255 * 255) >> 8 to become 254, and so not solid 'if (a < 255)' anymore:
+#define LV_OPA_MIX2(a1, a2) ((((lv_opa_t)(a1) * (a2)) < 65025) ? (((int32_t)(a1) * (a2)) >> 8) : 255)
+#define LV_OPA_MIX3(a1, a2, a3) ((((lv_opa_t)(a1) * (a2)) < 16581375) ? (((int32_t)(a1) * (a2) * (a3)) >> 16) : 255)
 
 /**********************
  * GLOBAL PROTOTYPES
@@ -338,9 +339,16 @@ uint16_t lv_color_to_u16(lv_color_t color);
 /**
  * Convert am RGB888 color to XRGB8888 stored in `uint32_t`
  * @param color     and RGB888 color
- * @return          `color` as XRGB8888 on `uin32_t` (the alpha channel is always set to 0xFF)
+ * @return          `color` as XRGB8888 on `uin32_t` (the alpha channel is always set to 0xFF [solid])
  */
 uint32_t lv_color_to_u32(lv_color_t color);
+
+/**
+ * Convert am ARGB888 color to XRGB8888 stored in `uint32_t`
+ * @param color     and ARGB888 color
+ * @return          `color` as XRGB8888 on `uin32_t` (the alpha channel is taken from the color)
+ */
+uint32_t lv_color_32_to_u32(lv_color32_t color);
 
 /**
  * Mix two RGB565 colors

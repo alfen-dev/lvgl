@@ -12,9 +12,12 @@
 #include "../../misc/lv_assert.h"
 #include "../../misc/lv_log.h"
 #include "../../stdlib/lv_mem.h"
+#include "../../draw/sw/lv_draw_sw.h"
 
 #include "lv_svg_token.h"
 #include "lv_svg_parser.h"
+
+#include <math.h>
 
 /*********************
 *      DEFINES
@@ -27,6 +30,11 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
+
+static void lv_svg_node_attr_set(lv_svg_node_t * node, lv_svg_attr_type_t id, float value);
+static void lv_svg_node_set_size(lv_svg_node_t * node, int32_t w, int32_t h);
+
+
 static void lv_svg_node_constructor(const lv_tree_class_t * class_p, lv_tree_node_t * node)
 {
     LV_UNUSED(class_p);
@@ -59,6 +67,8 @@ static bool svg_token_process_cb(_lv_svg_token_t * token, void * data)
     return _lv_svg_parser_token(parser, token);
 }
 
+
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -89,7 +99,7 @@ lv_svg_node_t * lv_svg_load_data(const char * svg_data, uint32_t data_len)
             lv_svg_node_t * doc = parser.doc_root;
             parser.doc_root = NULL;
             _lv_svg_parser_deinit(&parser);
-#if LV_USE_SVG_DEBUG
+#if 0 //LV_USE_SVG_DEBUG
             _lv_svg_dump_tree(doc, 0);
 #endif
             return doc;
@@ -118,7 +128,492 @@ void lv_svg_node_delete(lv_svg_node_t * node)
     lv_tree_node_delete((lv_tree_node_t *)node);
 }
 
+
+lv_svg_attr_t * lv_svg_get_attr(lv_svg_node_t * node, lv_svg_attr_type_t id)
+{
+    lv_svg_attr_t * attr = NULL;
+
+    uint32_t len = lv_array_size(&node->attrs);
+    for(uint32_t i = 0; i < len; i++) {
+        lv_svg_attr_t* attr_ = lv_array_at(&node->attrs, i);
+        if (attr_->id == id)
+        {
+            attr= attr_;
+            break;
+        }
+    }
+
+    return attr;
+}
+
+
+void lv_svg_get_size(lv_svg_node_t * node, int32_t* w, int32_t* h)
+{
+    int32_t w_ = -1;
+    int32_t h_ = -1;
+    lv_svg_attr_t* width_attr = lv_svg_get_attr(node, LV_SVG_ATTR_WIDTH);
+    lv_svg_attr_t* height_attr = lv_svg_get_attr(node, LV_SVG_ATTR_HEIGHT);
+    lv_svg_attr_t* viewBox_attr = lv_svg_get_attr(node, LV_SVG_ATTR_VIEWBOX);
+
+    if (viewBox_attr != NULL) {
+        if (viewBox_attr->class_type != LV_SVG_ATTR_VALUE_NONE) {
+            if (viewBox_attr->val_type == LV_SVG_ATTR_VALUE_PTR) {
+                float* vals = viewBox_attr->value.val;
+                // [x, y, w, h]
+                w_ = vals[2];
+                h_ = vals[3];
+            }
+        }
+    }
+    if (height_attr != NULL) {
+        if (height_attr->class_type != LV_SVG_ATTR_VALUE_NONE) {
+            h_ = roundf(height_attr->value.fval);
+        }
+    }
+    if (width_attr != NULL) {
+        if (width_attr->class_type != LV_SVG_ATTR_VALUE_NONE) {
+            w_ = roundf(width_attr->value.fval);
+        }
+    }
+    if (w_ > 0) {
+        *w = w_;
+    } 
+    if (h_ > 0) {
+        *h = h_;
+    } 
+}
+
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include "../../core/lv_obj_class_private.h"
+#include "../../widgets/canvas/lv_canvas_private.h"
+#include "../../draw/sw/lv_draw_sw.h"
+#include "../../draw/lv_draw_private.h"
+#include "../../misc/lv_types.h"
+
+#include "lv_svg_render.h"
+
+#if LV_USE_SVG_ANIMATION
+#include "lv_svg_anim.h"
+#endif
+
+#include <limits.h>
+
+/**********************
+ *  STATIC VARIABLES
+ **********************/
+struct _lv_svg_t {
+    // inheritance parent
+    lv_canvas_t canvas;
+
+    lv_svg_node_t * doc;
+    lv_vector_dsc_t* dsc;
+    lv_svg_render_obj_t * list;
+
+    Tvg_Canvas * tvg_canvas;
+    lv_anim_t * anim;
+    float animTime_ms;
+    int32_t last_rendered_time;
+
+};
+
+/*********************
+*      DEFINES
+*********************/
+
+#define MY_CLASS (&lv_svg_class)
+
+
+/**********************
+*      TYPEDEFS
+**********************/
+
+/**********************
+ *  STATIC PROTOTYPES
+ **********************/
+
+static void lv_svg_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_svg_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void svg_anim_cb(void * var, int32_t v);
+static void svg_update(lv_obj_t* obj, int32_t v, bool force_draw);
+static void svg_update_draw(lv_svg_t* svg, int32_t v);
+
+
+/**********************
+ *  GLOBAL VARIABLES
+ **********************/
+
+const lv_obj_class_t lv_svg_class = {
+    .constructor_cb = lv_svg_constructor,
+    .destructor_cb = lv_svg_destructor,
+    .width_def = LV_DPI_DEF,
+    .height_def = LV_DPI_DEF,
+    .instance_size = sizeof(lv_svg_t),
+    .base_class = &lv_canvas_class,
+    .name = "svg",
+};
+
+#define MY_CLASS (&lv_svg_class)
+
+
+/**********************
+ *      MACROS
+ **********************/
+
+/**********************
+ *   GLOBAL FUNCTIONS
+ **********************/
+
+
+lv_obj_t * lv_svg_create(lv_obj_t * parent)
+{
+    LV_LOG_INFO("begin");
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+    lv_obj_class_init_obj(obj);
+    return obj;
+}
+
+
+void lv_svg_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf, uint32_t bufferSize_bytes, lv_color_format_t lvColorFormat)
+{
+    lv_svg_t * svg = (lv_svg_t *)obj;
+
+    int32_t stride_bytes = lv_draw_buf_width_to_stride(w, lvColorFormat);
+    Tvg_Colorspace tvgColorFormat = lv_lvgl_to_tvg(lvColorFormat);
+
+    buf = lv_draw_buf_align(buf, lvColorFormat);
+
+    uint32_t stride_pixels = stride_bytes / lv_color_format_get_size(lvColorFormat);
+    tvg_swcanvas_set_target(svg->tvg_canvas, buf, 0, 0, stride_pixels, w, h, tvgColorFormat);
+    lv_canvas_set_buffer(obj, buf, w, h, lvColorFormat);
+
+    /* Rendered output images are premultiplied */
+    lv_draw_buf_t * draw_buf = lv_canvas_get_draw_buf(obj);
+    lv_draw_buf_set_flag(draw_buf, LV_IMAGE_FLAGS_PREMULTIPLIED);
+
+    /*Force updating when the buffer changes*/
+    svg_update(obj, (int32_t)0, true);
+}
+
+lv_anim_t * lv_svg_get_anim(lv_obj_t * obj)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+    lv_svg_t * svg = (lv_svg_t *)obj;
+    return svg->anim;
+}
+
+/**********************
+ *   STATIC FUNCTIONS
+ **********************/
+
+
+static void lv_svg_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
+    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+
+    lv_svg_t * svg = (lv_svg_t *)obj;
+
+    svg->doc =NULL;
+    svg->dsc =NULL;
+    svg->list =NULL;
+    svg->tvg_canvas = tvg_swcanvas_create();
+    svg->anim = NULL;
+
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_exec_cb(&a, svg_anim_cb);
+    lv_anim_set_var(&a, obj);
+    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+    svg->anim = lv_anim_start(&a);
+    svg->animTime_ms = 0;
+
+    lv_draw_buf_t * draw_buf = lv_canvas_get_draw_buf(obj);
+    if(draw_buf) {
+       lv_color_format_t cf = draw_buf->header.cf;
+       LV_LOG("cf %d 0x%02X", cf, cf);		 
+	}
+
+    //lv_display_t * disp = lv_refr_get_disp_refreshing();
+    //if(layer != disp->layer_head) {
+//
+    //}
+
+
+
+    LV_TRACE_OBJ_CREATE("finished");
+}
+
+static void lv_svg_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+{
+    LV_UNUSED(class_p);
+    lv_svg_t* svg = (lv_svg_t*)obj;
+
+    if (svg->anim != NULL) {
+        lv_anim_delete(obj, svg_anim_cb);
+        svg->anim = NULL;
+    }
+
+    tvg_canvas_destroy(svg->tvg_canvas);
+
+    lv_svg_node_delete(svg->doc);
+
+}
+
+
+static void svg_update(lv_obj_t* obj, int32_t v, bool force_draw)
+{
+    lv_svg_t* svg = (lv_svg_t*)obj;
+
+    /*Do not render not visible animations.*/
+    if(lv_obj_is_visible(obj) || force_draw) {
+        svg_update_draw(svg, v);
+        if(svg->anim) {
+            svg->last_rendered_time = svg->anim->act_time;
+        }
+    }
+    else {
+        /*Artificially keep the animation on the last rendered frame's time
+         *To avoid a jump when the widget becomes visible*/
+        if(svg->anim) {
+            svg->anim->act_time = svg->last_rendered_time;
+        }
+    }
+}
+
+
+static void svg_anim_cb(void * var, int32_t v)
+{
+    lv_obj_t* obj = (lv_obj_t*)var;
+	svg_update(obj, v, false);
+}
+
+static void lv_svg_node_set_size(lv_svg_node_t * node, int32_t w, int32_t h)
+{
+    lv_svg_node_attr_set(node, LV_SVG_ATTR_WIDTH, w);
+    lv_svg_node_attr_set(node, LV_SVG_ATTR_HEIGHT, h);
+}
+
+int32_t lv_svg_node_fit_size(lv_svg_node_t* node, int32_t control_w, int32_t control_h, bool only_smaller)
+{
+    int32_t w = INT_MAX;
+    int32_t h = INT_MAX;
+    lv_svg_attr_t* attr_w = lv_svg_get_attr(node, LV_SVG_ATTR_WIDTH);
+    lv_svg_attr_t* attr_h = lv_svg_get_attr(node, LV_SVG_ATTR_HEIGHT);
+    if ((attr_w != NULL) && (attr_w->value.fval > 0) &&
+        (attr_h != NULL) && (attr_h->value.fval > 0))
+    {
+        float ratioW = 1.0F;
+        float ratioH = 1.0F;
+            w = LV_MIN(w, attr_w->value.fval);
+        if (control_w > 0) {
+            if (only_smaller) {
+                ratioW = LV_MIN(1.0F, (((float)control_w) / ((float)w)));
+            }
+            else {
+                ratioW = (((float)control_w) / ((float)w));
+            }
+        }
+        h = LV_MIN(h, attr_h->value.fval);
+        if (control_h > 0) {
+            if (only_smaller) {
+                ratioH = LV_MIN(1.0F, (((float)control_h) / ((float)h)));
+            }
+            else {
+                ratioH = (((float)control_h) / ((float)h));
+            }
+        }
+        float ratio = LV_MIN(ratioW, ratioH);
+        w = w * ratio;
+        h = h * ratio;
+    }
+    w = LV_MIN(w, control_w);
+    h = LV_MIN(h, control_h);
+
+    lv_svg_node_set_size(node, w, h);
+
+    lv_svg_render_fix(node);
+
+    return w;
+}
+
+void lv_svg_node_fit_width(lv_svg_node_t* node, int32_t control_w)
+{
+    int32_t w = INT_MAX;
+    int32_t h = INT_MAX;
+    lv_svg_attr_t* attr_w = lv_svg_get_attr(node, LV_SVG_ATTR_WIDTH);
+    if ((attr_w != NULL) && (attr_w->value.fval > 0))
+    {
+        w = LV_MIN(w, attr_w->value.fval);
+    }
+    lv_svg_attr_t* attr_h = lv_svg_get_attr(node, LV_SVG_ATTR_HEIGHT);
+    if ((attr_h != NULL) && (attr_h->value.fval > 0))
+    {
+        h = LV_MIN(h, attr_h->value.fval);
+    }
+    // only smaller
+    if (control_w < w) {
+        float ratio = (((float)control_w) / ((float)w));
+        w = control_w; // = w * ratio
+        h = h * ratio;
+        lv_svg_node_set_size(node, w, h);
+
+        lv_svg_render_fix(node);
+    }
+}
+
+void lv_svg_node_set_pos(lv_svg_node_t* node, int32_t control_x, int32_t control_y)
+{
+
+}
+
+void lv_svg_set_src_data(lv_obj_t* obj, const char * svg_data, uint32_t svg_data_len, int32_t control_w, int32_t control_h)
+{
+    lv_svg_t * svg = (lv_svg_t *)obj;
+
+    lv_svg_node_delete(svg->doc);
+    svg->doc = lv_svg_load_data(svg_data, svg_data_len);
+    svg->animTime_ms = 0;
+
+    lv_svg_node_fit_size(svg->doc, control_w, control_h, true);
+
+    int32_t w;
+    int32_t h;
+    lv_svg_get_size(svg->doc, &w, &h);
+
+    lv_image_t * img = (lv_image_t *)svg;
+
+    img->w = w;
+    img->h = h;
+
+    if (lv_svg_node_has_animation(svg->doc)) {
+        lv_anim_t a;
+        lv_anim_init(&a);
+        lv_anim_set_exec_cb(&a, svg_anim_cb);
+        lv_anim_set_var(&a, obj);
+        lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+        svg->anim = lv_anim_start(&a);
+    }
+
+    /*Force updating when the buffer changes*/
+    svg_update(obj, 0, true);
+}
+
+
+static void svg_update_draw(lv_svg_t* svg, int32_t v)
+{
+    lv_obj_t* obj = (lv_obj_t*)svg;
+    lv_image_t* img = (lv_image_t*)svg;
+
+#if LV_USE_SVG_ANIMATION
+    if ((svg->doc != NULL) && (svg->anim != NULL)) {
+        lv_svg_node_animate_step(svg->doc, svg->animTime_ms);
+    }
+#endif
+
+    lv_draw_buf_t * draw_buf = lv_canvas_get_draw_buf(obj);
+    if(draw_buf) {
+        lv_draw_buf_clear(draw_buf, NULL);
+        /*Drop old cached image*/
+        lv_image_cache_drop(lv_image_get_src(obj));
+
+        Tvg_Colorspace tvg_cf = lv_lvgl_to_tvg(draw_buf->header.cf);
+        lv_color_t bg_c = lv_obj_get_style_bg_color(lv_screen_active(), LV_PART_MAIN);
+        lv_opa_t bg_a = lv_obj_get_style_bg_opa(lv_screen_active(), LV_PART_MAIN);
+        lv_color32_t color = lv_color_to_32(bg_c, bg_a);
+
+        lv_layer_t dummyLayer = 
+        {
+            .draw_buf = draw_buf,
+            .buf_area = {
+                .x1 = 0,
+                .y1 = 0,
+                .x2 = img->w + 0,
+                .y2 = img->h + 0,
+            },
+            .color_format = draw_buf->header.cf,
+            ._clip_area = {
+                .x1 = 0,
+                .y1 = 0,
+                .x2 = img->w + 0,
+                .y2 = img->h + 0,
+            },
+            .phy_clip_area = {
+                .x1 = 0,
+                .y1 = 0,
+                .x2 = img->w + 0,
+                .y2 = img->h + 0,
+            },
+            .draw_task_head = NULL,
+            .parent = NULL,
+            .next = NULL,
+            .all_tasks_added = false,
+            .user_data = NULL,
+        };
+
+        lv_area_t viewPort = {0, 0, 0 + img->w, 0 + img->h};
+        lv_draw_vector_set_viewport_tvg_canvas(&viewPort, svg->tvg_canvas);
+
+        lv_vector_dsc_t* dsc = lv_vector_dsc_create(&dummyLayer);
+
+        lv_svg_render_obj_t* list = lv_svg_render_create(svg->doc);
+        lv_draw_svg_render(dsc, list);
+
+        lv_draw_vector_tvg_canvas(0, 0, &(dsc->tasks), svg->tvg_canvas, draw_buf->header.cf, color);
+        
+        lv_svg_render_delete(list);
+        lv_vector_dsc_delete(dsc);
+    }
+    lv_obj_invalidate(obj);
+
+    if (v > 0) {
+        svg->animTime_ms += LV_DEF_REFR_PERIOD;
+    }
+}
+
+
+lv_svg_attr_t * lv_svg_add_attr(lv_svg_node_t * node, lv_svg_attr_type_t id)
+{
+    lv_result_t result = lv_array_push_back(&node->attrs, NULL);
+    LV_ASSERT(LV_RESULT_OK == result);       
+    lv_svg_attr_t* nodeAttr = lv_array_at(&node->attrs, node->attrs.size - 1);
+    LV_ASSERT(nodeAttr != NULL);       
+    nodeAttr->id = id;
+    nodeAttr->value.val = NULL;
+
+    return nodeAttr;
+}
+
+
+static void lv_svg_node_attr_set(lv_svg_node_t * node, lv_svg_attr_type_t id, float value)
+{
+    lv_svg_attr_t* attr = lv_svg_get_attr(node, id);
+    if (attr == NULL)
+    {
+        attr = lv_svg_add_attr(node, id);
+        attr->val_type = LV_SVG_ATTR_VALUE_DATA;
+        attr->class_type = LV_SVG_ATTR_VALUE_INITIAL;
+    }
+    attr->value.fval = value;
+}
+
+
+
 #endif /*LV_USE_SVG*/

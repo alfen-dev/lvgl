@@ -15,12 +15,14 @@
 #if LV_USE_THORVG_EXTERNAL
     #include <thorvg_capi.h>
 #else
-    #include "../../libs/thorvg/thorvg_capi.h"
+    #include "../../libs/thorvg/src/bindings/capi/thorvg_capi.h"
 #endif
 #include "../../stdlib/lv_string.h"
 #include "blend/lv_draw_sw_blend_private.h"
 #include "blend/lv_draw_sw_blend_to_rgb565.h"
 #include "blend/lv_draw_sw_blend_to_rgb888.h"
+
+#include "../../widgets/canvas/lv_canvas.h"
 
 /*********************
  *      DEFINES
@@ -217,15 +219,15 @@ static void _set_paint_stroke_gradient(Tvg_Paint * obj, const lv_vector_gradient
     Tvg_Gradient * grad = NULL;
     if(g->style == LV_VECTOR_GRADIENT_STYLE_RADIAL) {
         grad = tvg_radial_gradient_new();
-        tvg_radial_gradient_set(grad, g->cx, g->cy, g->cr);
+        tvg_radial_gradient_set(grad, g->cx, g->cy, g->cr, g->cx, g->cy, 0);
         _setup_gradient(grad, g, m);
-        tvg_shape_set_stroke_radial_gradient(obj, grad);
+        tvg_shape_set_stroke_gradient(obj, grad);
     }
     else {
         grad = tvg_linear_gradient_new();
         tvg_linear_gradient_set(grad, g->x1, g->y1, g->x2, g->y2);
         _setup_gradient(grad, g, m);
-        tvg_shape_set_stroke_linear_gradient(obj, grad);
+        tvg_shape_set_stroke_gradient(obj, grad);
     }
 }
 
@@ -247,7 +249,7 @@ static void _set_paint_stroke(Tvg_Paint * obj, const lv_vector_stroke_dsc_t * ds
 
     if(!lv_array_is_empty(&dsc->dash_pattern)) {
         float * dash_array = lv_array_front(&dsc->dash_pattern);
-        tvg_shape_set_stroke_dash(obj, dash_array, dsc->dash_pattern.size);
+        tvg_shape_set_stroke_dash(obj, dash_array, dsc->dash_pattern.size, 0);
     }
 }
 
@@ -255,11 +257,11 @@ static Tvg_Fill_Rule lv_fill_rule_to_tvg(lv_vector_fill_t rule)
 {
     switch(rule) {
         case LV_VECTOR_FILL_NONZERO:
-            return TVG_FILL_RULE_WINDING;
+            return TVG_FILL_RULE_NON_ZERO;
         case LV_VECTOR_FILL_EVENODD:
             return TVG_FILL_RULE_EVEN_ODD;
         default:
-            return TVG_FILL_RULE_WINDING;
+            return TVG_FILL_RULE_NON_ZERO;
     }
 }
 
@@ -268,15 +270,15 @@ static void _set_paint_fill_gradient(Tvg_Paint * obj, const lv_vector_gradient_t
     Tvg_Gradient * grad = NULL;
     if(g->style == LV_VECTOR_GRADIENT_STYLE_RADIAL) {
         grad = tvg_radial_gradient_new();
-        tvg_radial_gradient_set(grad, g->cx, g->cy, g->cr);
+        tvg_radial_gradient_set(grad, g->cx, g->cy, g->cr, g->cx, g->cy, 0);
         _setup_gradient(grad, g, m);
-        tvg_shape_set_radial_gradient(obj, grad);
+        tvg_shape_set_gradient(obj, grad);
     }
     else {
         grad = tvg_linear_gradient_new();
         tvg_linear_gradient_set(grad, g->x1, g->y1, g->x2, g->y2);
         _setup_gradient(grad, g, m);
-        tvg_shape_set_linear_gradient(obj, grad);
+        tvg_shape_set_gradient(obj, grad);
     }
 }
 
@@ -302,16 +304,32 @@ static void _set_paint_fill_pattern(Tvg_Paint * obj, Tvg_Canvas * canvas, const 
     const lv_image_header_t * header = &decoder_dsc.decoded->header;
     lv_color_format_t cf = header->cf;
 
-    if(cf != LV_COLOR_FORMAT_ARGB8888) {
+#if PIXEL_TYPE_SIZE == 4
+    if(cf != LV_COLOR_FORMAT_ARGB8888 && cf != LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
         lv_image_decoder_close(&decoder_dsc);
         LV_LOG_ERROR("Not support image format");
         return;
     }
-
+    Tvg_Colorspace cs = TVG_COLORSPACE_UNKNOWN;
+    if(cf == LV_COLOR_FORMAT_ARGB8888) {
+    	cs = TVG_COLORSPACE_ARGB8888;
+    }
+    else if(cf == LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
+    	cs = TVG_COLORSPACE_ARGB8888S;
+    }
+#elif PIXEL_TYPE_SIZE == 2
+    if(cf != LV_COLOR_FORMAT_RGB565) {
+        lv_image_decoder_close(&decoder_dsc);
+        LV_LOG_ERROR("Not support image format");
+        return;
+    }
+    Tvg_Colorspace cs = TVG_COLORSPACE_RGB565;    
+#endif
     Tvg_Paint * img = tvg_picture_new();
-    tvg_picture_load_raw(img, (uint32_t *)src_buf, header->w, header->h, true);
+    tvg_picture_load_raw(img, (PIXEL_TYPE*)src_buf, header->w, header->h, cs, true);
     Tvg_Paint * clip_path = tvg_paint_duplicate(obj);
-    tvg_paint_set_composite_method(img, clip_path, TVG_COMPOSITE_METHOD_CLIP_PATH);
+    // @deprecated Use Paint::clip()
+    tvg_paint_set_mask_method(img, clip_path, TVG_MASK_METHOD_ALPHA);
     tvg_paint_set_opacity(img, p->opa);
 
     Tvg_Matrix mtx;
@@ -336,9 +354,9 @@ static void _set_paint_fill(Tvg_Paint * obj, Tvg_Canvas * canvas, const lv_vecto
 
         if(dsc->fill_units == LV_VECTOR_FILL_UNITS_OBJECT_BOUNDING_BOX) {
             /* Convert to object bounding box coordinates */
-            float x, y, w, h;
-            tvg_paint_get_bounds(obj, &x, &y, &w, &h, false);
-            lv_matrix_translate(&imx, x, y);
+            Tvg_Point boundingBox[4];
+            tvg_paint_get_obb(obj, boundingBox);
+            lv_matrix_translate(&imx, boundingBox[0].x, boundingBox[0].y);
         }
 
         lv_matrix_multiply(&imx, &dsc->matrix);
@@ -359,8 +377,6 @@ static Tvg_Blend_Method lv_blend_to_tvg(lv_vector_blend_t blend)
             return TVG_BLEND_METHOD_SCREEN;
         case LV_VECTOR_BLEND_MULTIPLY:
             return TVG_BLEND_METHOD_MULTIPLY;
-        case LV_VECTOR_BLEND_NONE:
-            return TVG_BLEND_METHOD_SRCOVER;
         case LV_VECTOR_BLEND_ADDITIVE:
             return TVG_BLEND_METHOD_ADD;
         case LV_VECTOR_BLEND_SRC_IN:
@@ -368,6 +384,7 @@ static Tvg_Blend_Method lv_blend_to_tvg(lv_vector_blend_t blend)
         case LV_VECTOR_BLEND_DST_IN:
         case LV_VECTOR_BLEND_SUBTRACTIVE:
         /*not support yet.*/
+        case LV_VECTOR_BLEND_NONE:
         default:
             return TVG_BLEND_METHOD_NORMAL;
     }
@@ -438,7 +455,7 @@ static void _task_draw_cb(void * ctx, const lv_vector_path_t * path, const lv_ve
         };
         _set_paint_matrix(obj, &mtx);
         mtx.e23 -= (float)(y_offset);
-        tvg_shape_append_rect(obj, rc.x + state->translate_x, rc.y + state->translate_y, rc.w, rc.h, 0, 0);
+        tvg_shape_append_rect(obj, rc.x + state->translate_x, rc.y + state->translate_y, rc.w, rc.h, 0, 0, true);
         tvg_shape_set_fill_color(obj, c.r, c.g, c.b, c.a);
     }
     else {
@@ -466,8 +483,7 @@ static void _task_draw_cb(void * ctx, const lv_vector_path_t * path, const lv_ve
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
-
-void lv_draw_sw_vector(lv_draw_task_t * t, lv_draw_vector_task_dsc_t * dsc)
+void lv_draw_sw_vector(lv_draw_task_t * t, lv_draw_vector_task_dsc_t * dsc, lv_color32_t color)
 {
     if(dsc->task_list == NULL)
         return;
@@ -480,35 +496,60 @@ void lv_draw_sw_vector(lv_draw_task_t * t, lv_draw_vector_task_dsc_t * dsc)
     void * buf = draw_buf->data;
     int32_t width = lv_area_get_width(&layer->buf_area);
     int32_t height = lv_area_get_height(&layer->buf_area);
-    uint32_t stride = draw_buf->header.stride;
+    uint32_t stride_bytes = draw_buf->header.stride;
 
     lv_color_format_t cf = draw_buf->header.cf;
 
     bool allow_buffer = false;
     lv_draw_buf_t * new_buf = NULL;
 
-    if(cf != LV_COLOR_FORMAT_ARGB8888 && \
-       cf != LV_COLOR_FORMAT_XRGB8888) {
-        allow_buffer = true;
-        new_buf = lv_draw_buf_create(width, height, LV_COLOR_FORMAT_ARGB8888, LV_STRIDE_AUTO);
-        lv_draw_buf_clear(new_buf, NULL);
-        buf = new_buf->data;
-        stride = new_buf->header.stride;
+#if PIXEL_TYPE_SIZE == 4
+    if ((cf != LV_COLOR_FORMAT_ARGB8888) &&
+        (cf != LV_COLOR_FORMAT_XRGB8888)) {
+        LV_LOG_ERROR("unsupported layer color: %d", cf);
+        return;
     }
-    Tvg_Canvas * canvas = tvg_swcanvas_create();
-    tvg_swcanvas_set_target(canvas, buf, stride / 4, width, height, TVG_COLORSPACE_ARGB8888);
+    PIXEL_TYPE tvg_color = lv_color_32_to_u32(color);
+#elif PIXEL_TYPE_SIZE == 2
+    if(cf != LV_COLOR_FORMAT_RGB565) {
+        LV_LOG_ERROR("unsupported layer color: %d", cf);
+        return;
+    }
+    lv_color_t c16 = {.blue = color.blue, .green = color.green, .red = color.red};
+    PIXEL_TYPE tvg_color = lv_color_to_u16(c16);
+#endif
 
+    Tvg_Colorspace tvg_cf = lv_lvgl_to_tvg(cf);
+    uint32_t stride_pixels = stride_bytes / PIXEL_TYPE_SIZE;
+
+    Tvg_Canvas * canvas = tvg_swcanvas_create();
+   
+#if 0    
+    tvg_swcanvas_set_target(canvas, buf, 0, 0, stride_pixels, width, height, tvg_cf);
+#endif
     _tvg_rect rc;
     lv_area_to_tvg(&rc, &t->clip_area);
+#if 0    
     tvg_canvas_set_viewport(canvas, (int32_t)rc.x, (int32_t)(rc.y - layer->partial_y_offset), (int32_t)rc.w, (int32_t)rc.h);
 
     _tvg_draw_state state = {canvas, layer->partial_y_offset, -layer->buf_area.x1, -layer->buf_area.y1};
 
-    lv_ll_t * task_list = dsc->task_list;
-    lv_vector_for_each_destroy_tasks(task_list, _task_draw_cb, &state);
-    dsc->task_list = NULL;
+#else
+    tvg_swcanvas_set_target(canvas, buf, rc.x, rc.y, stride_pixels, rc.w, rc.h, tvg_cf);
 
-    if(tvg_canvas_draw(canvas) == TVG_RESULT_SUCCESS) {
+    lv_area_t viewPort = {0, 0, width, height};
+    lv_draw_vector_set_viewport_tvg_canvas(&viewPort, canvas);
+
+    int32_t partial_y_offset = 0;
+    _tvg_draw_state state = {canvas, partial_y_offset, -layer->buf_area.x1, -layer->buf_area.y1};
+    //_tvg_draw_state state = {canvas, partial_y_offset, 0, 0};
+#endif
+
+    lv_ll_t * task_list = dsc->task_list;
+    dsc->task_list = NULL;
+    lv_vector_for_each_destroy_tasks(task_list, _task_draw_cb, &state);
+
+    if(tvg_canvas_draw(canvas, true, tvg_color) == TVG_RESULT_SUCCESS) {
         tvg_canvas_sync(canvas);
     }
 
@@ -520,6 +561,40 @@ void lv_draw_sw_vector(lv_draw_task_t * t, lv_draw_vector_task_dsc_t * dsc)
 
     tvg_canvas_destroy(canvas);
 }
+
+
+void lv_draw_vector_set_viewport_tvg_canvas(lv_area_t* area, Tvg_Canvas * canvas)
+{
+    _tvg_rect rc;
+    lv_area_to_tvg(&rc, area);
+    tvg_canvas_set_viewport(canvas, (int32_t)rc.x, (int32_t)rc.y, (int32_t)rc.w, (int32_t)rc.h);
+}
+
+Tvg_Colorspace lv_lvgl_to_tvg(lv_color_format_t lvColorFormat)
+{
+    Tvg_Colorspace result = TVG_COLORSPACE_UNKNOWN;
+    switch (lvColorFormat)
+    {
+#if PIXEL_TYPE_SIZE == 4
+        case LV_COLOR_FORMAT_RGB888  : result = TVG_COLORSPACE_ABGR8888  ; break;
+        case LV_COLOR_FORMAT_ARGB8888: result = TVG_COLORSPACE_ARGB8888  ; break;
+        case LV_COLOR_FORMAT_XRGB8888: result = TVG_COLORSPACE_ARGB8888  ; break;
+        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED: result = TVG_COLORSPACE_ARGB8888S  ; break;
+#elif PIXEL_TYPE_SIZE == 2
+        case LV_COLOR_FORMAT_RGB565: result = TVG_COLORSPACE_RGB565    ; break;
+#elif PIXEL_TYPE_SIZE == 1
+        case LV_COLOR_FORMAT_L8    : result = TVG_COLORSPACE_GRAYSCALE8; break;
+#endif        
+        default: 
+            // not supported
+            LV_LOG_ERROR("Failed to convert LVGL %d for pixel size %d", lvColorFormat, PIXEL_TYPE_SIZE);
+
+            LV_ASSERT(false);
+            break;
+    }
+    return result;
+}
+
 
 /**********************
  *   STATIC FUNCTIONS

@@ -204,6 +204,9 @@ typedef struct {
     float m[3][3];
 } lv_svg_matrix_t;
 
+void lv_svg_matrix_multiply(lv_svg_matrix_t * matrix, const lv_svg_matrix_t * mul);
+
+
 typedef uint32_t lv_svg_color_t;
 
 enum {
@@ -321,6 +324,15 @@ lv_svg_node_t * lv_svg_node_create(lv_svg_node_t * parent);
  */
 void lv_svg_node_delete(lv_svg_node_t * node);
 
+void lv_svg_get_size(lv_svg_node_t * node, int32_t* x, int32_t* y);
+
+
+void lv_svg_node_fit_width(lv_svg_node_t* node, int32_t control_w);
+int32_t lv_svg_node_fit_size(lv_svg_node_t* node, int32_t control_w, int32_t control_h, bool only_smaller);
+void lv_svg_node_set_pos(lv_svg_node_t* node, int32_t control_x, int32_t control_y);
+
+
+
 /**********************
  *      MACROS
  **********************/
@@ -328,6 +340,44 @@ void lv_svg_node_delete(lv_svg_node_t * node);
     ((lv_svg_node_t *)(LV_TREE_NODE((n))->children[i]))
 
 #define LV_SVG_NODE(n) ((lv_svg_node_t*)(n))
+
+
+
+
+#include "../../misc/lv_color.h"
+
+/*********************
+ *      DEFINES
+ *********************/
+
+/**********************
+ *      TYPEDEFS
+ **********************/
+
+typedef struct _lv_svg_t lv_svg_t;
+
+/**********************
+ * GLOBAL PROTOTYPES
+ **********************/
+
+/**
+ * Make the base object's class publicly available.
+ */
+LV_ATTRIBUTE_EXTERN_DATA extern const lv_obj_class_t lv_svg_class;
+
+lv_obj_t * lv_svg_create(lv_obj_t * parent);
+
+void lv_svg_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf, uint32_t bufferSize_bytes, lv_color_format_t lvColorFormat);
+
+void lv_svg_set_src_data(lv_obj_t* obj, const char* svg_data, uint32_t svg_data_len, int32_t control_w, int32_t control_h);
+
+lv_anim_t * lv_svg_get_anim(lv_obj_t * obj);
+
+lv_svg_attr_t * lv_svg_add_attr(lv_svg_node_t * node, lv_svg_attr_type_t id);
+lv_svg_attr_t * lv_svg_get_attr(lv_svg_node_t * node, lv_svg_attr_type_t id);
+
+
+
 
 #endif /*LV_USE_SVG*/
 
