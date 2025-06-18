@@ -299,7 +299,7 @@ void lv_svg_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf, uint32_
     buf = lv_draw_buf_align(buf, lvColorFormat);
 
     uint32_t stride_pixels = stride_bytes / lv_color_format_get_size(lvColorFormat);
-    tvg_swcanvas_set_target(svg->tvg_canvas, buf, 0, 0, stride_pixels, w, h, tvgColorFormat);
+    tvg_swcanvas_set_target(svg->tvg_canvas, buf, stride_pixels, w, h, tvgColorFormat);
     lv_canvas_set_buffer(obj, buf, w, h, lvColorFormat);
 
     /* Rendered output images are premultiplied */
@@ -568,18 +568,21 @@ static void svg_update_draw(lv_svg_t* svg, int32_t v)
             .user_data = NULL,
         };
 
-        lv_area_t viewPort = {0, 0, 0 + img->w, 0 + img->h};
-        lv_draw_vector_set_viewport_tvg_canvas(&viewPort, svg->tvg_canvas);
+#if 0
+        // Create task to render the widget using the render task (freertos: single task; Linux seperate tasks!)
 
-        lv_vector_dsc_t* dsc = lv_vector_dsc_create(&dummyLayer);
+    lv_draw_task_t * t = lv_draw_add_task(layer, &(obj->coords), LV_DRAW_TASK_TYPE_VECTOR);
+    t->type = LV_DRAW_TASK_TYPE_VECTOR;
+    t->draw_dsc = lv_malloc(sizeof(lv_draw_vector_task_dsc_t));
+    
+    // copy contents/move list:
+    lv_memcpy(t->draw_dsc, &(dsc->tasks), sizeof(lv_draw_vector_task_dsc_t));
+    lv_draw_finalize_task_creation(layer, t);
+    dsc->tasks.task_list = NULL;
 
-        lv_svg_render_obj_t* list = lv_svg_render_create(svg->doc);
-        lv_draw_svg_render(dsc, list);
+#endif    
 
-        lv_draw_vector_tvg_canvas(0, 0, &(dsc->tasks), svg->tvg_canvas, draw_buf->header.cf, color);
-        
-        lv_svg_render_delete(list);
-        lv_vector_dsc_delete(dsc);
+ 
     }
     lv_obj_invalidate(obj);
 

@@ -81,7 +81,7 @@ void lv_lottie_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf, lv_c
     buf = lv_draw_buf_align(buf, lvColorFormat);
 
     uint32_t stride_pixels = stride_bytes / lv_color_format_get_size(lvColorFormat);
-    tvg_swcanvas_set_target(lottie->tvg_canvas, buf, 0, 0, stride_pixels, w, h, tvgColorFormat);
+    tvg_swcanvas_set_target(lottie->tvg_canvas, buf, stride_pixels, w, h, tvgColorFormat);
 
     tvg_canvas_push(lottie->tvg_canvas, lottie->tvg_paint);
     lv_canvas_set_buffer(obj, buf, w, h, lvColorFormat);
@@ -111,7 +111,7 @@ void lv_lottie_set_draw_buf(lv_obj_t * obj, lv_draw_buf_t * draw_buf)
 
     lv_lottie_t * lottie = (lv_lottie_t *)obj;
     uint32_t stride_pixels = draw_buf->header.stride / lv_color_format_get_size(draw_buf->header.cf);
-    tvg_swcanvas_set_target(lottie->tvg_canvas, (void *)draw_buf->data, 0, 0, stride_pixels,
+    tvg_swcanvas_set_target(lottie->tvg_canvas, (void *)draw_buf->data, stride_pixels,
                             draw_buf->header.w, draw_buf->header.h, tvgColorFormat);
     tvg_canvas_push(lottie->tvg_canvas, lottie->tvg_paint);
     lv_canvas_set_draw_buf(obj, draw_buf);
