@@ -425,7 +425,7 @@ static void containers_with_scrolling_cb(void)
     lv_obj_t * scr = lv_screen_active();
     lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    lv_obj_set_style_pad_row(scr, 32, 0);
+    lv_obj_set_style_pad_row(scr, 32, LV_PART_MAIN);
 
     int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / 400;
     int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / (120 + 32);

@@ -3,12 +3,12 @@
 
 static void row_gap_anim(void * obj, int32_t v)
 {
-    lv_obj_set_style_pad_row((lv_obj_t *) obj, v, 0);
+    lv_obj_set_style_pad_row((lv_obj_t *) obj, v, LV_PART_MAIN);
 }
 
 static void column_gap_anim(void * obj, int32_t v)
 {
-    lv_obj_set_style_pad_column((lv_obj_t *) obj, v, 0);
+    lv_obj_set_style_pad_column((lv_obj_t *) obj, v, LV_PART_MAIN);
 }
 
 /**

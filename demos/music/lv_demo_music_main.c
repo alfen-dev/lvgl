@@ -653,7 +653,7 @@ static lv_obj_t * create_handle(lv_obj_t * parent)
     lv_obj_set_size(cont, lv_pct(100), LV_SIZE_CONTENT);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_row(cont, 8, 0);
+    lv_obj_set_style_pad_row(cont, 8, LV_PART_MAIN);
 
     /*A handle to scroll to the track list*/
     lv_obj_t * handle_label = lv_label_create(cont);

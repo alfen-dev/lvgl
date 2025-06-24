@@ -49,9 +49,9 @@ static lv_obj_t * fill_obj_create(lv_obj_t * parent, int32_t col, int32_t row)
 
     lv_obj_t * obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
-    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0);
-    lv_obj_set_style_bg_color(obj, colors[col], 0);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(obj, colors[col], LV_PART_MAIN);
     lv_obj_set_size(obj, DEF_WIDTH, DEF_HEIGHT);
     add_to_cell(obj, col, row);
 
@@ -69,47 +69,47 @@ static void fill_cb(lv_obj_t * parent)
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = fill_obj_create(parent, i, 1);
-        lv_obj_set_style_radius(obj, 10, 0);
+        lv_obj_set_style_radius(obj, 10, LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = fill_obj_create(parent, i, 2);
-        lv_obj_set_style_radius(obj, 100, 0);
+        lv_obj_set_style_radius(obj, 100, LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = fill_obj_create(parent, i, 3);
-        lv_obj_set_style_radius(obj, 10, 0);
-        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_HOR, 0);
-        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0x888), 0);
-        lv_obj_set_style_bg_grad_stop(obj, 200, 0);
+        lv_obj_set_style_radius(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_HOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0x888), LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_stop(obj, 200, LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = fill_obj_create(parent, i, 4);
-        lv_obj_set_style_radius(obj, 10, 0);
-        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, 0);
-        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0x888), 0);
-        lv_obj_set_style_bg_grad_stop(obj, 200, 0);
+        lv_obj_set_style_radius(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0x888), LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_stop(obj, 200, LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
 
         lv_obj_t * obj = fill_obj_create(parent, i, 5);
-        lv_obj_set_style_radius(obj, 10, 0);
-        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_HOR, 0);
-        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0x888), 0);
-        lv_obj_set_style_bg_grad_opa(obj, LV_OPA_TRANSP, 0);
-        lv_obj_set_style_bg_grad_stop(obj, 200, 0);
+        lv_obj_set_style_radius(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_HOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0x888), LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_stop(obj, 200, LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = fill_obj_create(parent, i, 6);
-        lv_obj_set_style_radius(obj, 10, 0);
-        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, 0);
-        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0x888), 0);
-        lv_obj_set_style_bg_grad_opa(obj, LV_OPA_TRANSP, 0);
-        lv_obj_set_style_bg_grad_stop(obj, 200, 0);
+        lv_obj_set_style_radius(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0x888), LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_stop(obj, 200, LV_PART_MAIN);
     }
 }
 
@@ -117,9 +117,9 @@ static lv_obj_t * border_obj_create(lv_obj_t * parent, int32_t col, int32_t row)
 {
     lv_obj_t * obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
-    lv_obj_set_style_border_color(obj, lv_color_hex3(0x000), 0);
-    lv_obj_set_style_border_width(obj, 3, 0);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_border_color(obj, lv_color_hex3(0x000), LV_PART_MAIN);
+    lv_obj_set_style_border_width(obj, 3, LV_PART_MAIN);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
     lv_obj_set_size(obj, DEF_WIDTH, DEF_HEIGHT);
     add_to_cell(obj, col, row);
 
@@ -151,60 +151,60 @@ static void border_cb(lv_obj_t * parent)
     uint32_t i;
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = border_obj_create(parent, i, 0);
-        lv_obj_set_style_radius(obj, 0, 0);
-        lv_obj_set_style_border_side(obj, sides[i], 0);
-        lv_obj_set_style_border_color(obj, lv_color_hex3(0xf00), 0);
+        lv_obj_set_style_radius(obj, 0, LV_PART_MAIN);
+        lv_obj_set_style_border_side(obj, sides[i], LV_PART_MAIN);
+        lv_obj_set_style_border_color(obj, lv_color_hex3(0xf00), LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = border_obj_create(parent, i, 1);
-        lv_obj_set_style_radius(obj, 0, 0);
-        lv_obj_set_style_border_side(obj, sides[i + 8], 0);
-        lv_obj_set_style_border_color(obj, lv_color_hex3(0xf00), 0);
+        lv_obj_set_style_radius(obj, 0, LV_PART_MAIN);
+        lv_obj_set_style_border_side(obj, sides[i + 8], LV_PART_MAIN);
+        lv_obj_set_style_border_color(obj, lv_color_hex3(0xf00), LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = border_obj_create(parent, i, 2);
-        lv_obj_set_style_radius(obj, 10, 0);
-        lv_obj_set_style_border_side(obj, sides[i], 0);
-        lv_obj_set_style_border_color(obj, lv_color_hex3(0x0f0), 0);
+        lv_obj_set_style_radius(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_border_side(obj, sides[i], LV_PART_MAIN);
+        lv_obj_set_style_border_color(obj, lv_color_hex3(0x0f0), LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = border_obj_create(parent, i, 3);
-        lv_obj_set_style_radius(obj, 10, 0);
-        lv_obj_set_style_border_side(obj, sides[i + 8], 0);
-        lv_obj_set_style_border_color(obj, lv_color_hex3(0x0f0), 0);
+        lv_obj_set_style_radius(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_border_side(obj, sides[i + 8], LV_PART_MAIN);
+        lv_obj_set_style_border_color(obj, lv_color_hex3(0x0f0), LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = border_obj_create(parent, i, 4);
-        lv_obj_set_style_radius(obj, 100, 0);
-        lv_obj_set_style_border_side(obj, sides[i], 0);
-        lv_obj_set_style_border_color(obj, lv_color_hex3(0x00f), 0);
+        lv_obj_set_style_radius(obj, 100, LV_PART_MAIN);
+        lv_obj_set_style_border_side(obj, sides[i], LV_PART_MAIN);
+        lv_obj_set_style_border_color(obj, lv_color_hex3(0x00f), LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = border_obj_create(parent, i, 5);
-        lv_obj_set_style_radius(obj, 100, 0);
-        lv_obj_set_style_border_side(obj, sides[i + 8], 0);
-        lv_obj_set_style_border_color(obj, lv_color_hex3(0x00f), 0);
+        lv_obj_set_style_radius(obj, 100, LV_PART_MAIN);
+        lv_obj_set_style_border_side(obj, sides[i + 8], LV_PART_MAIN);
+        lv_obj_set_style_border_color(obj, lv_color_hex3(0x00f), LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = border_obj_create(parent, i, 6);
-        lv_obj_set_style_radius(obj, 100, 0);
-        lv_obj_set_style_border_side(obj, sides[i], 0);
-        lv_obj_set_style_border_color(obj, lv_color_hex3(0x888), 0);
-        lv_obj_set_style_border_width(obj, 10, 0);
+        lv_obj_set_style_radius(obj, 100, LV_PART_MAIN);
+        lv_obj_set_style_border_side(obj, sides[i], LV_PART_MAIN);
+        lv_obj_set_style_border_color(obj, lv_color_hex3(0x888), LV_PART_MAIN);
+        lv_obj_set_style_border_width(obj, 10, LV_PART_MAIN);
     }
 
     for(i = 0; i < COL_CNT; i++) {
         lv_obj_t * obj = border_obj_create(parent, i, 7);
-        lv_obj_set_style_radius(obj, 100, 0);
-        lv_obj_set_style_border_side(obj, sides[i + 8], 0);
-        lv_obj_set_style_border_color(obj, lv_color_hex3(0x888), 0);
-        lv_obj_set_style_border_width(obj, 10, 0);
+        lv_obj_set_style_radius(obj, 100, LV_PART_MAIN);
+        lv_obj_set_style_border_side(obj, sides[i + 8], LV_PART_MAIN);
+        lv_obj_set_style_border_color(obj, lv_color_hex3(0x888), LV_PART_MAIN);
+        lv_obj_set_style_border_width(obj, 10, LV_PART_MAIN);
     }
 }
 
@@ -212,10 +212,10 @@ static lv_obj_t * box_shadow_obj_create(lv_obj_t * parent, int32_t col, int32_t 
 {
     lv_obj_t * obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
-    lv_obj_set_style_bg_opa(obj, LV_OPA_20, 0);
-    lv_obj_set_style_bg_color(obj, lv_color_black(), 0);
-    lv_obj_set_style_shadow_color(obj, lv_color_hex3(0xf00), 0);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(obj, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_shadow_color(obj, lv_color_hex3(0xf00), LV_PART_MAIN);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
     lv_obj_set_size(obj, DEF_WIDTH - 20, DEF_HEIGHT - 5);
     add_to_cell(obj, col, row);
 
@@ -242,35 +242,35 @@ static void box_shadow_cb(lv_obj_t * parent)
     uint32_t i;
     for(i = 0; i < 7; i++) {
         lv_obj_t * obj = box_shadow_obj_create(parent, i, 0);
-        lv_obj_set_style_radius(obj, 0, 0);
-        lv_obj_set_style_shadow_width(obj, 10, 0);
-        lv_obj_set_style_shadow_offset_x(obj, ofs[i].x, 0);
-        lv_obj_set_style_shadow_offset_y(obj, ofs[i].y, 0);
+        lv_obj_set_style_radius(obj, 0, LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_shadow_offset_x(obj, ofs[i].x, LV_PART_MAIN);
+        lv_obj_set_style_shadow_offset_y(obj, ofs[i].y, LV_PART_MAIN);
     }
 
     for(i = 0; i < 7; i++) {
         lv_obj_t * obj = box_shadow_obj_create(parent, i, 1);
-        lv_obj_set_style_radius(obj, 5, 0);
-        lv_obj_set_style_shadow_width(obj, 10, 0);
-        lv_obj_set_style_shadow_offset_x(obj, ofs[i].x, 0);
-        lv_obj_set_style_shadow_offset_y(obj, ofs[i].y, 0);
+        lv_obj_set_style_radius(obj, 5, LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_shadow_offset_x(obj, ofs[i].x, LV_PART_MAIN);
+        lv_obj_set_style_shadow_offset_y(obj, ofs[i].y, LV_PART_MAIN);
     }
 
     for(i = 0; i < 7; i++) {
         lv_obj_t * obj = box_shadow_obj_create(parent, i, 2);
-        lv_obj_set_style_radius(obj, 100, 0);
-        lv_obj_set_style_shadow_width(obj, 10, 0);
-        lv_obj_set_style_shadow_offset_x(obj, ofs[i].x, 0);
-        lv_obj_set_style_shadow_offset_y(obj, ofs[i].y, 0);
+        lv_obj_set_style_radius(obj, 100, LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_shadow_offset_x(obj, ofs[i].x, LV_PART_MAIN);
+        lv_obj_set_style_shadow_offset_y(obj, ofs[i].y, LV_PART_MAIN);
     }
 
     for(i = 0; i < 7; i++) {
         lv_obj_t * obj = box_shadow_obj_create(parent, i, 3);
-        lv_obj_set_style_radius(obj, 5, 0);
-        lv_obj_set_style_shadow_width(obj, 10, 0);
-        lv_obj_set_style_shadow_spread(obj, 3, 0);
-        lv_obj_set_style_shadow_offset_x(obj, ofs[i].x, 0);
-        lv_obj_set_style_shadow_offset_y(obj, ofs[i].y, 0);
+        lv_obj_set_style_radius(obj, 5, LV_PART_MAIN);
+        lv_obj_set_style_shadow_width(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_shadow_spread(obj, 3, LV_PART_MAIN);
+        lv_obj_set_style_shadow_offset_x(obj, ofs[i].x, LV_PART_MAIN);
+        lv_obj_set_style_shadow_offset_y(obj, ofs[i].y, LV_PART_MAIN);
     }
 }
 
@@ -280,7 +280,7 @@ static lv_obj_t * text_obj_create(lv_obj_t * parent, int32_t col, int32_t row)
     lv_obj_t * obj = lv_label_create(parent);
     lv_obj_remove_style_all(obj);
     lv_label_set_text(obj, "Hello LVGL! It should be a placeholder: ű. Looks good?");
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
     add_to_cell(obj, col, row);
 
     return obj;
@@ -294,7 +294,7 @@ static void text_cb(lv_obj_t * parent)
     obj = text_obj_create(parent, 3, 0);
 
     obj = text_obj_create(parent, 3, 1);
-    lv_obj_set_style_text_color(obj, lv_color_hex3(0xff0), 0);
+    lv_obj_set_style_text_color(obj, lv_color_hex3(0xff0), LV_PART_MAIN);
 
     obj = text_obj_create(parent, 3, 2);
     lv_label_set_text_selection_start(obj, 12);
@@ -302,13 +302,13 @@ static void text_cb(lv_obj_t * parent)
     lv_obj_set_style_bg_color(obj, lv_color_hex3(0x0ff), LV_PART_SELECTED);
 
     obj = text_obj_create(parent, 3, 3);
-    lv_obj_set_style_text_decor(obj, LV_TEXT_DECOR_UNDERLINE, 0);
+    lv_obj_set_style_text_decor(obj, LV_TEXT_DECOR_UNDERLINE, LV_PART_MAIN);
 
     obj = text_obj_create(parent, 3, 4);
-    lv_obj_set_style_text_decor(obj, LV_TEXT_DECOR_STRIKETHROUGH, 0);
+    lv_obj_set_style_text_decor(obj, LV_TEXT_DECOR_STRIKETHROUGH, LV_PART_MAIN);
 
     obj = text_obj_create(parent, 3, 5);
-    lv_obj_set_style_text_decor(obj, LV_TEXT_DECOR_UNDERLINE | LV_TEXT_DECOR_STRIKETHROUGH, 0);
+    lv_obj_set_style_text_decor(obj, LV_TEXT_DECOR_UNDERLINE | LV_TEXT_DECOR_STRIKETHROUGH, LV_PART_MAIN);
 
 }
 
@@ -317,11 +317,11 @@ static lv_obj_t * image_obj_create(lv_obj_t * parent, int32_t col, int32_t row, 
     lv_obj_t * obj = lv_image_create(parent);
     lv_obj_remove_style_all(obj);
     if(recolor) {
-        lv_obj_set_style_image_recolor_opa(obj, LV_OPA_50, 0);
-        lv_obj_set_style_image_recolor(obj, lv_color_hex3(0x0f0), 0);
+        lv_obj_set_style_image_recolor_opa(obj, LV_OPA_50, LV_PART_MAIN);
+        lv_obj_set_style_image_recolor(obj, lv_color_hex3(0x0f0), LV_PART_MAIN);
     }
 
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
     add_to_cell(obj, col, row);
 
     return obj;
@@ -451,8 +451,8 @@ static lv_obj_t * line_obj_create(lv_obj_t * parent, int32_t col, int32_t row, l
     lv_obj_remove_style_all(obj);
     lv_line_set_points(obj, p, 2);
     lv_obj_set_size(obj, DEF_WIDTH, DEF_HEIGHT);
-    lv_obj_set_style_line_color(obj, lv_color_hex3(0xff0), 0);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_line_color(obj, lv_color_hex3(0xff0), LV_PART_MAIN);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
     add_to_cell(obj, col, row);
 
     return obj;
@@ -481,8 +481,8 @@ static void line_cb(lv_obj_t * parent)
             uint32_t i;
             for(i = 0; i < COL_CNT; i++) {
                 lv_obj_t * obj = line_obj_create(parent, i, w + 4 * r, points[i]);
-                lv_obj_set_style_line_width(obj, widths[w], 0);
-                lv_obj_set_style_line_rounded(obj, r, 0);
+                lv_obj_set_style_line_width(obj, widths[w], LV_PART_MAIN);
+                lv_obj_set_style_line_rounded(obj, r, LV_PART_MAIN);
             }
         }
     }
@@ -493,12 +493,12 @@ static lv_obj_t * arc_obj_create(lv_obj_t * parent, int32_t col, int32_t row, in
 {
     lv_obj_t * obj = lv_arc_create(parent);
     lv_obj_remove_style_all(obj);
-    lv_obj_set_style_arc_width(obj, w, 0);
-    lv_obj_set_style_arc_color(obj, lv_color_white(), 0);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_arc_width(obj, w, LV_PART_MAIN);
+    lv_obj_set_style_arc_color(obj, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
     lv_arc_set_bg_angles(obj, start, end);
     lv_obj_set_size(obj, DEF_HEIGHT, DEF_HEIGHT);
-    lv_obj_set_style_line_color(obj, lv_color_hex3(0xff0), 0);
+    lv_obj_set_style_line_color(obj, lv_color_hex3(0xff0), LV_PART_MAIN);
     add_to_cell(obj, col, row);
 
     return obj;
@@ -526,8 +526,8 @@ static void arc_core_cb(lv_obj_t * parent, const void * img_src)
             uint32_t i;
             for(i = 0; i < COL_CNT; i++) {
                 lv_obj_t * obj = arc_obj_create(parent, i, w + 4 * r, widths[w], angles[i][0], angles[i][1]);
-                lv_obj_set_style_arc_rounded(obj, r, 0);
-                lv_obj_set_style_arc_image_src(obj, img_src, 0);
+                lv_obj_set_style_arc_rounded(obj, r, LV_PART_MAIN);
+                lv_obj_set_style_arc_image_src(obj, img_src, LV_PART_MAIN);
             }
         }
     }
@@ -562,13 +562,13 @@ static void triangle_draw_event_cb(lv_event_t * e)
     dsc.p[2].x = p_rel[2].x + coords.x1 + 8;
     dsc.p[2].y = p_rel[2].y + coords.y1 + 2;
 
-    lv_opa_t opa = lv_obj_get_style_opa(obj, 0);
-    dsc.grad.dir = lv_obj_get_style_bg_grad_dir(obj, 0);
-    dsc.grad.stops[0].color = lv_obj_get_style_bg_color(obj, 0);
-    dsc.grad.stops[0].frac = lv_obj_get_style_bg_main_stop(obj, 0);
+    lv_opa_t opa = lv_obj_get_style_opa(obj, LV_PART_MAIN);
+    dsc.grad.dir = lv_obj_get_style_bg_grad_dir(obj, LV_PART_MAIN);
+    dsc.grad.stops[0].color = lv_obj_get_style_bg_color(obj, LV_PART_MAIN);
+    dsc.grad.stops[0].frac = lv_obj_get_style_bg_main_stop(obj, LV_PART_MAIN);
     dsc.grad.stops[0].opa = LV_OPA_MIX2(lv_obj_get_style_bg_main_opa(obj, 0), opa);
-    dsc.grad.stops[1].color = lv_obj_get_style_bg_grad_color(obj, 0);
-    dsc.grad.stops[1].frac = lv_obj_get_style_bg_grad_stop(obj, 0);
+    dsc.grad.stops[1].color = lv_obj_get_style_bg_grad_color(obj, LV_PART_MAIN);
+    dsc.grad.stops[1].frac = lv_obj_get_style_bg_grad_stop(obj, LV_PART_MAIN);
     dsc.grad.stops[1].opa = LV_OPA_MIX2(lv_obj_get_style_bg_grad_opa(obj, 0), opa);
     dsc.grad.stops_count = 2;
 
@@ -583,8 +583,8 @@ static lv_obj_t * triangle_obj_create(lv_obj_t * parent, int32_t col, int32_t ro
     lv_obj_t * obj = lv_arc_create(parent);
     lv_obj_remove_style_all(obj);
     lv_obj_set_size(obj, DEF_WIDTH, DEF_HEIGHT);
-    lv_obj_set_style_bg_color(obj, lv_color_hex3(0xff0), 0);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_bg_color(obj, lv_color_hex3(0xff0), LV_PART_MAIN);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
     lv_obj_add_event_cb(obj, triangle_draw_event_cb, LV_EVENT_DRAW_MAIN, p);
     add_to_cell(obj, col, row);
 
@@ -627,28 +627,28 @@ static void triangle_cb(lv_obj_t * parent)
 
     for(i = 0; i < 16; i++) {
         lv_obj_t * obj = triangle_obj_create(parent, i % 8, 2 + i / 8, points[i]);
-        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), 0);
-        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, 0);
+        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_MAIN);
     }
 
     for(i = 0; i < 16; i++) {
         lv_obj_t * obj = triangle_obj_create(parent, i % 8, 4 + i / 8, points[i]);
-        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), 0);
-        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_HOR, 0);
+        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_HOR, LV_PART_MAIN);
     }
 
     for(i = 0; i < 8; i++) {
         lv_obj_t * obj = triangle_obj_create(parent, i % 8, 6 + i / 8, points[i]);
-        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), 0);
-        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, 0);
-        lv_obj_set_style_bg_grad_opa(obj, LV_OPA_TRANSP, 0);
+        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     }
 
     for(i = 0; i < 8; i++) {
         lv_obj_t * obj = triangle_obj_create(parent, i % 8, 7 + i / 8, points[i]);
-        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), 0);
-        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_HOR, 0);
-        lv_obj_set_style_bg_grad_opa(obj, LV_OPA_TRANSP, 0);
+        lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_HOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_grad_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
     }
 }
 
@@ -657,16 +657,16 @@ static lv_obj_t * layer_obj_create(lv_obj_t * parent, int32_t col, int32_t row, 
     lv_obj_t * obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
     lv_obj_set_size(obj, DEF_WIDTH - 10, DEF_HEIGHT);
-    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0);
-    lv_obj_set_style_bg_color(obj, lv_color_hex3(0xff0), 0);
-    lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), 0);
-    lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, 0);
-    lv_obj_set_style_border_width(obj, 3, 0);
-    lv_obj_set_style_border_color(obj, lv_color_hex3(0x000), 0);
-    lv_obj_set_style_transform_pivot_x(obj, 0, 0);
-    lv_obj_set_style_transform_pivot_y(obj, 0, 0);
-    lv_obj_set_style_blend_mode(obj, blend_mode, 0);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(obj, lv_color_hex3(0xff0), LV_PART_MAIN);
+    lv_obj_set_style_bg_grad_color(obj, lv_color_hex3(0xf00), LV_PART_MAIN);
+    lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_MAIN);
+    lv_obj_set_style_border_width(obj, 3, LV_PART_MAIN);
+    lv_obj_set_style_border_color(obj, lv_color_hex3(0x000), LV_PART_MAIN);
+    lv_obj_set_style_transform_pivot_x(obj, 0, LV_PART_MAIN);
+    lv_obj_set_style_transform_pivot_y(obj, 0, LV_PART_MAIN);
+    lv_obj_set_style_blend_mode(obj, blend_mode, LV_PART_MAIN);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
     add_to_cell(obj, col, row);
 
     lv_obj_t * label = lv_label_create(obj);
@@ -685,51 +685,51 @@ static void layer_core_cb(lv_obj_t * parent, lv_blend_mode_t blend_mode)
         lv_obj_t * obj;
 
         obj = layer_obj_create(parent, 0, row, blend_mode);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
 
         obj = layer_obj_create(parent, 1, row, blend_mode);
-        lv_obj_set_style_transform_rotation(obj, 300, 0);
-        lv_obj_set_style_translate_x(obj, 10, 0);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_transform_rotation(obj, 300, LV_PART_MAIN);
+        lv_obj_set_style_translate_x(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
 
         obj = layer_obj_create(parent, 2, row, blend_mode);
-        lv_obj_set_style_transform_scale(obj, 400, 0);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_transform_scale(obj, 400, LV_PART_MAIN);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
 
         obj = layer_obj_create(parent, 4, row, blend_mode);
-        lv_obj_set_style_transform_rotation(obj, 300, 0);
-        lv_obj_set_style_transform_scale(obj, 400, 0);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_transform_rotation(obj, 300, LV_PART_MAIN);
+        lv_obj_set_style_transform_scale(obj, 400, LV_PART_MAIN);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
 
         obj = layer_obj_create(parent, 5, row, blend_mode);
-        lv_obj_set_style_transform_scale_x(obj, 400, 0);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_transform_scale_x(obj, 400, LV_PART_MAIN);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
 
         obj = layer_obj_create(parent, 7, row, blend_mode);
-        lv_obj_set_style_transform_scale_y(obj, 400, 0);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_transform_scale_y(obj, 400, LV_PART_MAIN);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
 
         obj = layer_obj_create(parent, 0, row + 2, blend_mode);
-        lv_obj_set_style_transform_rotation(obj, 300, 0);
-        lv_obj_set_style_transform_scale_x(obj, 400, 0);
-        lv_obj_set_style_translate_x(obj, 10, 0);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_transform_rotation(obj, 300, LV_PART_MAIN);
+        lv_obj_set_style_transform_scale_x(obj, 400, LV_PART_MAIN);
+        lv_obj_set_style_translate_x(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
 
         obj = layer_obj_create(parent, 2, row + 2, blend_mode);
-        lv_obj_set_style_transform_rotation(obj, 300, 0);
-        lv_obj_set_style_transform_scale_y(obj, 400, 0);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_transform_rotation(obj, 300, LV_PART_MAIN);
+        lv_obj_set_style_transform_scale_y(obj, 400, LV_PART_MAIN);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
 
         obj = layer_obj_create(parent, 5, row + 2, blend_mode);
-        lv_obj_set_style_opa_layered(obj, LV_OPA_50, 0);
-        lv_obj_set_style_translate_y(obj, 10, 0);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_opa_layered(obj, LV_OPA_50, LV_PART_MAIN);
+        lv_obj_set_style_translate_y(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
 
         obj = layer_obj_create(parent, 7, row + 2, blend_mode);
-        lv_obj_set_style_opa_layered(obj, LV_OPA_50, 0);
-        lv_obj_set_style_transform_rotation(obj, 300, 0);
-        lv_obj_set_style_translate_y(obj, 10, 0);
-        lv_obj_set_style_radius(obj, 8 * i, 0);
+        lv_obj_set_style_opa_layered(obj, LV_OPA_50, LV_PART_MAIN);
+        lv_obj_set_style_transform_rotation(obj, 300, LV_PART_MAIN);
+        lv_obj_set_style_translate_y(obj, 10, LV_PART_MAIN);
+        lv_obj_set_style_radius(obj, 8 * i, LV_PART_MAIN);
     }
 }
 
@@ -783,8 +783,8 @@ static lv_obj_t * create_blend_mode_obj(lv_obj_t * parent, int32_t col, int32_t 
     lv_obj_t * obj = lv_image_create(parent);
     lv_image_set_src(obj, src);
     lv_image_set_blend_mode(obj, blend_mode);
-    lv_obj_set_style_image_opa(obj, opa_saved, 0);
-    lv_obj_set_style_image_recolor(obj, lv_color_hex(0x00ff00), 0);
+    lv_obj_set_style_image_opa(obj, opa_saved, LV_PART_MAIN);
+    lv_obj_set_style_image_recolor(obj, lv_color_hex(0x00ff00), LV_PART_MAIN);
 
     add_to_cell(obj, col, row);
 
@@ -814,7 +814,7 @@ static void blend_mode_cb(lv_obj_t * parent)
     lv_obj_set_grid_dsc_array(parent, grid_cols, grid_rows);
 
     /*Make the parent darker for additive blending*/
-    lv_obj_set_style_bg_color(parent, lv_color_hex(0x808080), 0);
+    lv_obj_set_style_bg_color(parent, lv_color_hex(0x808080), LV_PART_MAIN);
 
     LV_DRAW_BUF_DEFINE_STATIC(buf_rgb565, 36, 30, LV_COLOR_FORMAT_RGB565);
     LV_DRAW_BUF_DEFINE_STATIC(buf_rgb888, 36, 30, LV_COLOR_FORMAT_RGB888);
@@ -859,19 +859,19 @@ static void blend_mode_cb(lv_obj_t * parent)
             lv_image_set_rotation(img, 200);
 
             img = create_blend_mode_obj(parent, 1 + cf * 2, 2 + m * 2, &image_dscs[cf], mode_values[m]);
-            lv_obj_set_style_image_recolor_opa(img, LV_OPA_50, 0);
+            lv_obj_set_style_image_recolor_opa(img, LV_OPA_50, LV_PART_MAIN);
 
             img = create_blend_mode_obj(parent, 2 + cf * 2, 2 + m * 2, &image_dscs[cf], mode_values[m]);
             lv_image_set_rotation(img, 200);
-            lv_obj_set_style_image_recolor_opa(img, LV_OPA_50, 0);
+            lv_obj_set_style_image_recolor_opa(img, LV_OPA_50, LV_PART_MAIN);
         }
     }
 
     /*Show the recolored image to show the original image*/
     lv_obj_t * img_recolored = lv_image_create(parent);
     lv_image_set_src(img_recolored, lv_canvas_get_image(canvas));
-    lv_obj_set_style_image_recolor(img_recolored, lv_color_hex(0x00ff00), 0);
-    lv_obj_set_style_image_recolor_opa(img_recolored, LV_OPA_50, 0);
+    lv_obj_set_style_image_recolor(img_recolored, lv_color_hex(0x00ff00), LV_PART_MAIN);
+    lv_obj_set_style_image_recolor_opa(img_recolored, LV_OPA_50, LV_PART_MAIN);
     lv_obj_set_y(img_recolored, 30);
     lv_obj_add_flag(img_recolored, LV_OBJ_FLAG_IGNORE_LAYOUT);
 
@@ -906,12 +906,12 @@ static lv_obj_t * create_linear_gradient_obj(lv_obj_t * parent, int32_t col, int
     lv_obj_t * obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
     lv_obj_set_size(obj, 70, 50);
-    lv_obj_set_style_radius(obj, radius, 0);
-    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_radius(obj, radius, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
 
     /*set gradient as background*/
-    lv_obj_set_style_bg_grad(obj, grad, 0);
+    lv_obj_set_style_bg_grad(obj, grad, LV_PART_MAIN);
 
     add_to_cell(obj, col, row);
 
@@ -986,12 +986,12 @@ static lv_obj_t * create_radial_gradient_obj(lv_obj_t * parent, int32_t col, int
     lv_obj_t * obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
     lv_obj_set_size(obj, 70, 50);
-    lv_obj_set_style_radius(obj, radius, 0);
-    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_radius(obj, radius, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
 
     /*set gradient as background*/
-    lv_obj_set_style_bg_grad(obj, grad, 0);
+    lv_obj_set_style_bg_grad(obj, grad, LV_PART_MAIN);
 
     add_to_cell(obj, col, row);
 
@@ -1060,12 +1060,12 @@ static lv_obj_t * create_conical_gradient_obj(lv_obj_t * parent, int32_t col, in
     lv_obj_t * obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
     lv_obj_set_size(obj, 70, 50);
-    lv_obj_set_style_radius(obj, radius, 0);
-    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0);
-    lv_obj_set_style_opa(obj, opa_saved, 0);
+    lv_obj_set_style_radius(obj, radius, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_opa(obj, opa_saved, LV_PART_MAIN);
 
     /*set gradient as background*/
-    lv_obj_set_style_bg_grad(obj, grad, 0);
+    lv_obj_set_style_bg_grad(obj, grad, LV_PART_MAIN);
 
     add_to_cell(obj, col, row);
 
@@ -1153,14 +1153,14 @@ void lv_demo_render(lv_demo_render_scene_t id, lv_opa_t opa)
     lv_obj_t * scr = lv_screen_active();
     lv_obj_clean(scr);
     lv_obj_remove_style_all(scr);
-    lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
-    lv_obj_set_style_text_color(scr, lv_color_black(), 0);
-    lv_obj_set_style_bg_color(scr, lv_color_white(), 0);
+    lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_text_color(scr, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(scr, lv_color_white(), LV_PART_MAIN);
 
     lv_obj_t * main_parent = lv_obj_create(scr);
     lv_obj_remove_style_all(main_parent);
-    lv_obj_set_style_bg_opa(main_parent, LV_OPA_COVER, 0);
-    lv_obj_set_style_bg_color(main_parent, lv_color_hex3(0xaaf), 0);
+    lv_obj_set_style_bg_opa(main_parent, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(main_parent, lv_color_hex3(0xaaf), LV_PART_MAIN);
     lv_obj_set_size(main_parent, 480, 272);
 
     static const int32_t grid_cols[] = {60, 60, 60, 60, 60, 60, 60, 60, LV_GRID_TEMPLATE_LAST};

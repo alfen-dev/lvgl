@@ -585,8 +585,8 @@ static lv_obj_t * create_chart_with_scales(lv_obj_t * parent, const char * title
     static const int32_t row_dsc[] = {LV_GRID_CONTENT, LV_GRID_FR(1), 40, LV_GRID_TEMPLATE_LAST};
 
     lv_obj_set_grid_dsc_array(parent, col_dsc, row_dsc);
-    lv_obj_set_style_pad_column(parent, 0, 0);
-    lv_obj_set_style_pad_row(parent, 0, 0);
+    lv_obj_set_style_pad_column(parent, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_row(parent, 0, LV_PART_MAIN);
 
     lv_obj_t * label = lv_label_create(parent);
     lv_label_set_text(label, title);
