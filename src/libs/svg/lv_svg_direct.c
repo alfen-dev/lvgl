@@ -125,7 +125,9 @@ static void lv_svg_direct_event(const lv_obj_class_t * class_p, lv_event_t * e)
 
 #if SVG_DIRECT_LOW_MEM
 #else
-			lv_svg_node_fit_size(svg->doc, svg->widget_size, true);
+            if (svg->doc != NULL) {
+			    lv_svg_node_fit_size(svg->doc, svg->widget_size, true);
+            }
 #endif
 
 
@@ -168,6 +170,8 @@ static void lv_svg_direct_constructor(const lv_obj_class_t * class_p, lv_obj_t *
     svg->tvg_canvas = tvg_swcanvas_create();
     svg->svg_size.x = 0;
     svg->svg_size.y = 0;
+    svg->svg_size_data.x = 0;
+    svg->svg_size_data.y = 0;
     svg->widget_size.x = 0;
     svg->widget_size.y = 0;
 
@@ -234,34 +238,70 @@ static void lv_svg_direct_destructor(const lv_obj_class_t* class_p, lv_obj_t* ob
 #endif
 }
 
-void lv_svg_direct_set_src_data(lv_obj_t* obj, const char * svg_data, uint32_t svg_data_len, const lv_point_t widget_size, const bool only_smaller)
+static lv_point_t lv_svg_direct_set_size_(lv_obj_t* obj, lv_svg_node_t * doc, const lv_point_t widget_size, const bool only_smaller)
 {
     lv_svg_direct_t * svg = (lv_svg_direct_t *)obj;
     lv_point_t svg_size = (lv_point_t){0, 0};
-
     svg->widget_size = widget_size;
-    lv_svg_node_t * doc;
-#if SVG_DIRECT_LOW_MEM
-    svg->svg_data = svg_data;
-    svg->svg_data_len = svg_data_len;
-    doc = lv_svg_load_data(svg_data, svg_data_len);
-#else
-    lv_svg_node_delete(svg->doc);
-    svg->doc = lv_svg_load_data(svg_data, svg_data_len);
-    doc = svg->doc;
-    lv_svg_get_size(svg->doc, &svg_size);
+
+    lv_svg_get_size(doc, &svg_size);
     svg->svg_size.x = svg_size.x;
     svg->svg_size.y = svg_size.y;
 
     // fit and keep aspect ration
-    svg->widget_size = lv_svg_node_fit_size(svg->doc, widget_size, only_smaller);
-#endif
+    svg->widget_size = lv_svg_node_fit_size(doc, widget_size, only_smaller);
+
     lv_point_t size;
     lv_svg_get_size(doc, &size);
     svg->svg_size.x = size.x;
     svg->svg_size.y = size.y;
     lv_obj_set_content_width(obj, size.x);
     lv_obj_set_content_height(obj, size.y);
+
+    return size;
+}
+
+lv_point_t lv_svg_direct_set_size(lv_obj_t* obj, const lv_point_t widget_size, const bool only_smaller)
+{
+    lv_svg_direct_t * svg = (lv_svg_direct_t *)obj;
+    lv_point_t svg_size = (lv_point_t){0, 0};
+
+    lv_svg_node_t * doc;
+#if SVG_DIRECT_LOW_MEM
+    doc = lv_svg_load_data(svg->svg_data, svg->svg_data_len);
+#else
+    doc = svg->doc;
+#endif
+
+    svg_size = lv_svg_direct_set_size_(obj, doc, widget_size, only_smaller);
+
+#if SVG_DIRECT_LOW_MEM
+    lv_svg_node_delete(doc);
+#endif
+    
+    return svg_size;
+}
+
+void lv_svg_direct_set_src_data(lv_obj_t* obj, const char * svg_data, uint32_t svg_data_len, const lv_point_t widget_size, const bool only_smaller)
+{
+    lv_svg_direct_t * svg = (lv_svg_direct_t *)obj;
+    lv_point_t svg_size = (lv_point_t){0, 0};
+
+    lv_svg_node_t * doc;
+#if SVG_DIRECT_LOW_MEM
+    svg->svg_data = svg_data;
+    svg->svg_data_len = svg_data_len;
+    doc = lv_svg_load_data(svg->svg_data, svg->svg_data_len);
+#else
+    lv_svg_node_delete(svg->doc);
+    svg->doc = lv_svg_load_data(svg_data, svg_data_len);
+    doc = svg->doc;
+#endif
+    lv_svg_get_size(doc, &svg_size);
+    svg->svg_size_data.x = svg_size.x;
+    svg->svg_size_data.y = svg_size.y;
+
+    svg_size = lv_svg_direct_set_size_(obj, doc, widget_size, only_smaller);
 
     if (svg->anim != NULL) {
         lv_anim_delete(obj, lv_svg_direct_anim_cb);

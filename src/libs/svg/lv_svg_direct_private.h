@@ -41,6 +41,7 @@ struct _lv_svg_direct_t {
     lv_svg_node_t* doc;
 #endif
     /** Size (Width x Height) of the image (Handled by the library)*/
+    lv_point_t svg_size_data;
     lv_point_t svg_size;
 
     lv_point_t widget_size;
