@@ -14,6 +14,8 @@
 
 #include "../../misc/lv_array.h"
 #include "../../misc/lv_tree.h"
+#include "../../misc/lv_area.h"
+
 /*********************
  *      DEFINES
  *********************/
@@ -324,12 +326,9 @@ lv_svg_node_t * lv_svg_node_create(lv_svg_node_t * parent);
  */
 void lv_svg_node_delete(lv_svg_node_t * node);
 
-void lv_svg_get_size(lv_svg_node_t * node, int32_t* x, int32_t* y);
+void lv_svg_get_size(lv_svg_node_t * node, lv_point_t *size);
 
-
-void lv_svg_node_fit_width(lv_svg_node_t* node, int32_t control_w);
-int32_t lv_svg_node_fit_size(lv_svg_node_t* node, int32_t control_w, int32_t control_h, bool only_smaller);
-void lv_svg_node_set_pos(lv_svg_node_t* node, int32_t control_x, int32_t control_y);
+lv_point_t lv_svg_node_fit_size(lv_svg_node_t* node, const lv_point_t size, bool only_smaller);
 
 
 
@@ -369,15 +368,18 @@ lv_obj_t * lv_svg_create(lv_obj_t * parent);
 
 void lv_svg_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf, uint32_t bufferSize_bytes, lv_color_format_t lvColorFormat);
 
-void lv_svg_set_src_data(lv_obj_t* obj, const char* svg_data, uint32_t svg_data_len, int32_t control_w, int32_t control_h);
+void lv_svg_set_src_data(lv_obj_t* obj, const char * svg_data, uint32_t svg_data_len, const lv_point_t widget_size);
 
 lv_anim_t * lv_svg_get_anim(lv_obj_t * obj);
 
-lv_svg_attr_t * lv_svg_add_attr(lv_svg_node_t * node, lv_svg_attr_type_t id);
-lv_svg_attr_t * lv_svg_get_attr(lv_svg_node_t * node, lv_svg_attr_type_t id);
+lv_svg_attr_t* lv_svg_add_attr(lv_svg_node_t* node, lv_svg_attr_type_t id);
+lv_svg_attr_t* lv_svg_get_attr(lv_svg_node_t* node, lv_svg_attr_type_t id);
 
+typedef bool (*lv_svg_node_iterator_cb_t)(lv_svg_node_t* node, void* user_data);
+bool lv_svg_node_iterate(lv_svg_node_t* node, lv_svg_node_iterator_cb_t cb, void* user_data);
 
-
+typedef bool (*lv_svg_attr_iterator_cb_t)(lv_svg_node_t* node, lv_svg_attr_t* attr, void* user_data);
+bool lv_svg_attr_iterate(lv_svg_node_t* node, lv_svg_attr_iterator_cb_t cb, void* user_data);
 
 #endif /*LV_USE_SVG*/
 

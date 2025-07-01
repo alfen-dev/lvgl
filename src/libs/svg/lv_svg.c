@@ -32,7 +32,7 @@
  **********************/
 
 static void lv_svg_node_attr_set(lv_svg_node_t * node, lv_svg_attr_type_t id, float value);
-static void lv_svg_node_set_size(lv_svg_node_t * node, int32_t w, int32_t h);
+static void lv_svg_node_set_size(lv_svg_node_t * node, const lv_point_t size);
 
 
 static void lv_svg_node_constructor(const lv_tree_class_t * class_p, lv_tree_node_t * node)
@@ -146,8 +146,7 @@ lv_svg_attr_t * lv_svg_get_attr(lv_svg_node_t * node, lv_svg_attr_type_t id)
     return attr;
 }
 
-
-void lv_svg_get_size(lv_svg_node_t * node, int32_t* w, int32_t* h)
+void lv_svg_get_size(lv_svg_node_t * node, lv_point_t *size)
 {
     int32_t w_ = -1;
     int32_t h_ = -1;
@@ -175,11 +174,13 @@ void lv_svg_get_size(lv_svg_node_t * node, int32_t* w, int32_t* h)
             w_ = roundf(width_attr->value.fval);
         }
     }
-    if (w_ > 0) {
-        *w = w_;
-    } 
-    if (h_ > 0) {
-        *h = h_;
+    if (size != NULL) {
+        if (w_ > 0) {
+            size->x = w_;
+        } 
+        if (h_ > 0) {
+            size->y = h_;
+        }
     } 
 }
 
@@ -405,13 +406,13 @@ static void svg_anim_cb(void * var, int32_t v)
 	svg_update(obj, v, false);
 }
 
-static void lv_svg_node_set_size(lv_svg_node_t * node, int32_t w, int32_t h)
+static void lv_svg_node_set_size(lv_svg_node_t * node, const lv_point_t size)
 {
-    lv_svg_node_attr_set(node, LV_SVG_ATTR_WIDTH, w);
-    lv_svg_node_attr_set(node, LV_SVG_ATTR_HEIGHT, h);
+    lv_svg_node_attr_set(node, LV_SVG_ATTR_WIDTH, size.x);
+    lv_svg_node_attr_set(node, LV_SVG_ATTR_HEIGHT, size.y);
 }
 
-int32_t lv_svg_node_fit_size(lv_svg_node_t* node, int32_t control_w, int32_t control_h, bool only_smaller)
+lv_point_t lv_svg_node_fit_size(lv_svg_node_t* node, const lv_point_t size, bool only_smaller)
 {
     int32_t w = INT_MAX;
     int32_t h = INT_MAX;
@@ -422,69 +423,41 @@ int32_t lv_svg_node_fit_size(lv_svg_node_t* node, int32_t control_w, int32_t con
     {
         float ratioW = 1.0F;
         float ratioH = 1.0F;
-            w = LV_MIN(w, attr_w->value.fval);
-        if (control_w > 0) {
+        w = LV_MIN(w, attr_w->value.fval);
+        if (size.x > 0) {
             if (only_smaller) {
-                ratioW = LV_MIN(1.0F, (((float)control_w) / ((float)w)));
+                ratioW = LV_MIN(1.0F, (((float)size.x) / ((float)w)));
             }
             else {
-                ratioW = (((float)control_w) / ((float)w));
+                ratioW = (((float)size.x) / ((float)w));
             }
         }
         h = LV_MIN(h, attr_h->value.fval);
-        if (control_h > 0) {
+        if (size.y > 0) {
             if (only_smaller) {
-                ratioH = LV_MIN(1.0F, (((float)control_h) / ((float)h)));
+                ratioH = LV_MIN(1.0F, (((float)size.y) / ((float)h)));
             }
             else {
-                ratioH = (((float)control_h) / ((float)h));
+                ratioH = (((float)size.y) / ((float)h));
             }
         }
         float ratio = LV_MIN(ratioW, ratioH);
         w = w * ratio;
         h = h * ratio;
     }
-    w = LV_MIN(w, control_w);
-    h = LV_MIN(h, control_h);
+    lv_point_t result;
+    result.x = ((size.x > 0) ? LV_MIN(w, size.x) : w);
+    result.y = ((size.y > 0) ? LV_MIN(h, size.y) : h);
 
-    lv_svg_node_set_size(node, w, h);
+    lv_svg_node_set_size(node, result);
 
     lv_svg_render_fix(node);
 
-    return w;
+    return result;
 }
 
-void lv_svg_node_fit_width(lv_svg_node_t* node, int32_t control_w)
-{
-    int32_t w = INT_MAX;
-    int32_t h = INT_MAX;
-    lv_svg_attr_t* attr_w = lv_svg_get_attr(node, LV_SVG_ATTR_WIDTH);
-    if ((attr_w != NULL) && (attr_w->value.fval > 0))
-    {
-        w = LV_MIN(w, attr_w->value.fval);
-    }
-    lv_svg_attr_t* attr_h = lv_svg_get_attr(node, LV_SVG_ATTR_HEIGHT);
-    if ((attr_h != NULL) && (attr_h->value.fval > 0))
-    {
-        h = LV_MIN(h, attr_h->value.fval);
-    }
-    // only smaller
-    if (control_w < w) {
-        float ratio = (((float)control_w) / ((float)w));
-        w = control_w; // = w * ratio
-        h = h * ratio;
-        lv_svg_node_set_size(node, w, h);
-
-        lv_svg_render_fix(node);
-    }
-}
-
-void lv_svg_node_set_pos(lv_svg_node_t* node, int32_t control_x, int32_t control_y)
-{
-
-}
-
-void lv_svg_set_src_data(lv_obj_t* obj, const char * svg_data, uint32_t svg_data_len, int32_t control_w, int32_t control_h)
+// widget_size == (0, 0) will not scale svg to widget size
+void lv_svg_set_src_data(lv_obj_t* obj, const char * svg_data, uint32_t svg_data_len, const lv_point_t widget_size)
 {
     lv_svg_t * svg = (lv_svg_t *)obj;
 
@@ -492,16 +465,15 @@ void lv_svg_set_src_data(lv_obj_t* obj, const char * svg_data, uint32_t svg_data
     svg->doc = lv_svg_load_data(svg_data, svg_data_len);
     svg->animTime_ms = 0;
 
-    lv_svg_node_fit_size(svg->doc, control_w, control_h, true);
+    lv_svg_node_fit_size(svg->doc, widget_size, true);
 
-    int32_t w;
-    int32_t h;
-    lv_svg_get_size(svg->doc, &w, &h);
+    lv_point_t svg_size;
+    lv_svg_get_size(svg->doc, &svg_size);
 
     lv_image_t * img = (lv_image_t *)svg;
 
-    img->w = w;
-    img->h = h;
+    img->w = svg_size.x;
+    img->h = svg_size.y;
 
     if (lv_svg_node_has_animation(svg->doc)) {
         lv_anim_t a;
@@ -603,5 +575,54 @@ static void lv_svg_node_attr_set(lv_svg_node_t * node, lv_svg_attr_type_t id, fl
 }
 
 
+typedef bool (*lv_svg_node_iterator_cb_t)(lv_svg_node_t* node, void* user_data);
+
+bool lv_svg_node_iterate(lv_svg_node_t* node, lv_svg_node_iterator_cb_t cb, void* user_data)
+{
+    bool result = cb(node, user_data);
+
+    lv_tree_node_t* tree_node = (lv_tree_node_t*)node;
+    uint32_t i = 0;
+    while (result && (i < tree_node->child_cnt)) {
+        lv_svg_node_t* child_node = ((lv_svg_node_t*)tree_node->children[i]);
+        if (!lv_svg_node_iterate(child_node, cb, user_data)) {
+            result = false;
+        }
+        else {
+            i++;
+        }
+    }
+    return result;
+}
+
+typedef struct lv_svg_attr_iterator_t_ {
+    lv_svg_attr_iterator_cb_t cb;
+    void* user_data;
+} lv_svg_attr_iterator_t;
+
+static bool node_attr_iterator(lv_svg_node_t* node, void* user_data)
+{
+    bool result = true;
+    lv_svg_attr_iterator_t* svg_attr_iterator = (lv_svg_attr_iterator_t*)user_data;
+    const uint32_t len = lv_array_size(&node->attrs);
+    uint32_t i = 0;
+    while (result && (i < len)) {
+        lv_svg_attr_t* attr = lv_array_at(&node->attrs, i);
+        if (!svg_attr_iterator->cb(node, attr, svg_attr_iterator->user_data)) {
+            result = false;
+        }
+        else {
+            i++;
+        }
+    }
+    return result;
+}
+
+bool lv_svg_attr_iterate(lv_svg_node_t* node, lv_svg_attr_iterator_cb_t cb, void* user_data)
+{
+    lv_svg_attr_iterator_t svg_attr_iterator = {cb, (lv_svg_attr_iterator_t*)user_data};
+    
+    return lv_svg_node_iterate(node, node_attr_iterator, &svg_attr_iterator);
+}
 
 #endif /*LV_USE_SVG*/
