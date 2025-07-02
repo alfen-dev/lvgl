@@ -30,7 +30,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 ### INFO: When LV_BUILD_SET_CONFIG_OPTS is enabled - these options are set automatically
 ### based on lv_conf.h or Kconfig
 
-option(CONFIG_LV_BUILD_DEMOS "Build demos" OFF)
+option(CONFIG_LV_BUILD_DEMOS "Build demos" ON)
 option(CONFIG_LV_BUILD_EXAMPLES "Build examples" OFF)
 option(CONFIG_LV_USE_THORVG_INTERNAL "Use the internal version of ThorVG" ON)
 option(CONFIG_LV_USE_PRIVATE_API "If set - install the private headers" OFF)
@@ -304,22 +304,22 @@ if(CONFIG_LV_BUILD_DEMOS)
 
     message(STATUS "Enabling the building of demos")
 
-    # add_library(lvgl_demos ${DEMO_SOURCES})
-    # add_library(lvgl::demos ALIAS lvgl_demos)
-    # target_include_directories(lvgl_demos SYSTEM PUBLIC ${LVGL_ROOT_DIR}/demos)
-    # set_target_properties(lvgl_demos PROPERTIES COMPILE_DEFINITIONS "${COMP_DEF}")
-    # 
-    # # This tells cmake to link lvgl with lvgl_examples
-    # # PUBLIC allows code linking with LVGL to also use the library
-    # # The linker will resolve all dependencies when dynamic linking 
-    # target_link_libraries(lvgl PUBLIC lvgl_demos)
-    # 
-    # # During static linking, we need to create a cyclic dependency as the demos also needs lvgl
-    # if (NOT BUILD_SHARED_LIBS)
-    #     # If static linking - demos depends on fonts defined in lvgl
-    #     # During dynamic linking, the linker is able to resolve everything
-    #     target_link_libraries(lvgl_demos PRIVATE lvgl)
-    # endif()
+    add_library(lvgl_demos ${DEMO_SOURCES})
+    add_library(lvgl::demos ALIAS lvgl_demos)
+    target_include_directories(lvgl_demos SYSTEM PUBLIC ${LVGL_ROOT_DIR}/demos)
+    set_target_properties(lvgl_demos PROPERTIES COMPILE_DEFINITIONS "${COMP_DEF}")
+    
+    # This tells cmake to link lvgl with lvgl_examples
+    # PUBLIC allows code linking with LVGL to also use the library
+    # The linker will resolve all dependencies when dynamic linking 
+    target_link_libraries(lvgl PUBLIC lvgl_demos)
+    
+    # During static linking, we need to create a cyclic dependency as the demos also needs lvgl
+    if (NOT BUILD_SHARED_LIBS)
+        # If static linking - demos depends on fonts defined in lvgl
+        # During dynamic linking, the linker is able to resolve everything
+        target_link_libraries(lvgl_demos PRIVATE lvgl)
+    endif()
 
 endif()
 
@@ -429,21 +429,21 @@ if(CONFIG_LV_BUILD_DEMOS)
         FILES_MATCHING
         PATTERN "*.h")
 
-    # set_target_properties(
-    #     lvgl_demos
-    #     PROPERTIES OUTPUT_NAME lvgl_demos
-    #     VERSION ${LVGL_VERSION}
-    #     SOVERSION ${LVGL_SOVERSION}
-    #     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-    #     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-    #     PUBLIC_HEADER "${LVGL_PUBLIC_HEADERS}")
-    # 
-    # install(
-    #     TARGETS lvgl_demos
-    #     ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
-    #     LIBRARY DESTINATION "${LIB_INSTALL_DIR}"
-    #     RUNTIME DESTINATION "${RUNTIME_INSTALL_DIR}"
-    #     PUBLIC_HEADER DESTINATION "${INC_INSTALL_DIR}")
+    set_target_properties(
+        lvgl_demos
+        PROPERTIES OUTPUT_NAME lvgl_demos
+        VERSION ${LVGL_VERSION}
+        SOVERSION ${LVGL_SOVERSION}
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+        PUBLIC_HEADER "${LVGL_PUBLIC_HEADERS}")
+    
+    install(
+        TARGETS lvgl_demos
+        ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
+        LIBRARY DESTINATION "${LIB_INSTALL_DIR}"
+        RUNTIME DESTINATION "${RUNTIME_INSTALL_DIR}"
+        PUBLIC_HEADER DESTINATION "${INC_INSTALL_DIR}")
 
 endif()
 
