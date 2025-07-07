@@ -12,7 +12,6 @@ if(NOT ESP_PLATFORM)
 endif()
 
 set(LVGL_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR})
-set(LV_BUILD_CONF_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 if(ESP_PLATFORM)
   include(${CMAKE_CURRENT_LIST_DIR}/env_support/cmake/esp.cmake)
