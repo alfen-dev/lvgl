@@ -82,6 +82,11 @@ static void arc_anim(lv_obj_t * obj);
 
 static lv_obj_t * card_create(void);
 
+static void svg_cb(void);
+
+extern void orb_waves_cb(void);
+extern void orb_waves_end_cb(void);
+
 static void empty_screen_cb(void)
 {
     color_anim(lv_screen_active());
@@ -465,26 +470,28 @@ static void widgets_demo_cb(void)
  **********************/
 
 static lv_demo_benchmark_scene_dsc_t scenes[] = {
-    {.name = "Empty screen",               .scene_time = 3000, .create_cb = empty_screen_cb},
-    {.name = "Moving wallpaper",           .scene_time = 3000, .create_cb = moving_wallpaper_cb},
-    {.name = "Single rectangle",           .scene_time = 3000, .create_cb = single_rectangle_cb},
-    {.name = "Multiple rectangles",        .scene_time = 3000, .create_cb = multiple_rectangles_cb},
-    {.name = "Multiple RGB images",        .scene_time = 3000, .create_cb = multiple_rgb_images_cb},
-    {.name = "Multiple ARGB images",       .scene_time = 3000, .create_cb = multiple_argb_images_cb},
-    {.name = "Rotated ARGB images",        .scene_time = 3000, .create_cb = rotated_argb_image_cb},
-    {.name = "Multiple labels",            .scene_time = 3000, .create_cb = multiple_labels_cb},
-    {.name = "Screen sized text",          .scene_time = 5000, .create_cb = screen_sized_text_cb},
-    {.name = "Multiple arcs",              .scene_time = 3000, .create_cb = multiple_arcs_cb},
+    {.name = "Waves Orb",                  .scene_time =  3000, .create_cb = orb_waves_cb                , .destruct_cb = orb_waves_end_cb},
+    {.name = "Animated SVG",               .scene_time =  3000, .create_cb = svg_cb                      , .destruct_cb = NULL},
+    {.name = "Empty screen",               .scene_time =  3000, .create_cb = empty_screen_cb             , .destruct_cb = NULL},
+    {.name = "Moving wallpaper",           .scene_time =  3000, .create_cb = moving_wallpaper_cb         , .destruct_cb = NULL},
+    {.name = "Single rectangle",           .scene_time =  3000, .create_cb = single_rectangle_cb         , .destruct_cb = NULL},
+    {.name = "Multiple rectangles",        .scene_time =  3000, .create_cb = multiple_rectangles_cb      , .destruct_cb = NULL},
+    {.name = "Multiple RGB images",        .scene_time =  3000, .create_cb = multiple_rgb_images_cb      , .destruct_cb = NULL},
+    {.name = "Multiple ARGB images",       .scene_time =  3000, .create_cb = multiple_argb_images_cb     , .destruct_cb = NULL},
+    {.name = "Rotated ARGB images",        .scene_time =  3000, .create_cb = rotated_argb_image_cb       , .destruct_cb = NULL},
+    {.name = "Multiple labels",            .scene_time =  3000, .create_cb = multiple_labels_cb          , .destruct_cb = NULL},
+    {.name = "Screen sized text",          .scene_time =  5000, .create_cb = screen_sized_text_cb        , .destruct_cb = NULL},
+    {.name = "Multiple arcs",              .scene_time =  3000, .create_cb = multiple_arcs_cb            , .destruct_cb = NULL},
 
-    {.name = "Containers",                 .scene_time = 3000, .create_cb = containers_cb},
-    {.name = "Containers with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb},
-    {.name = "Containers with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb},
-    {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb},
-    {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb},
+    {.name = "Containers",                 .scene_time =  3000, .create_cb = containers_cb               , .destruct_cb = NULL},
+    {.name = "Containers with overlay",    .scene_time =  3000, .create_cb = containers_with_overlay_cb  , .destruct_cb = NULL},
+    {.name = "Containers with opa",        .scene_time =  3000, .create_cb = containers_with_opa_cb      , .destruct_cb = NULL},
+    {.name = "Containers with opa_layer",  .scene_time =  3000, .create_cb = containers_with_opa_layer_cb, .destruct_cb = NULL},
+    {.name = "Containers with scrolling",  .scene_time =  5000, .create_cb = containers_with_scrolling_cb, .destruct_cb = NULL},
 
-    {.name = "Widgets demo",               .scene_time = 20000,           .create_cb = widgets_demo_cb},
+    {.name = "Widgets demo",               .scene_time = 20000, .create_cb = widgets_demo_cb             , .destruct_cb = NULL},
 
-    {.name = "", .create_cb = NULL}
+    {.name = "", .create_cb = NULL, .destruct_cb = NULL}
 };
 
 static uint32_t scene_act;
@@ -653,9 +660,16 @@ static void load_scene(uint32_t scene)
     if(scenes[scene].create_cb) scenes[scene].create_cb();
 }
 
+static void unload_scene(uint32_t scene)
+{
+    if(scenes[scene].destruct_cb) scenes[scene].destruct_cb();
+}
+
 static void next_scene_timer_cb(lv_timer_t * timer)
 {
     LV_UNUSED(timer);
+
+    unload_scene(scene_act);
 
     scene_act++;
 
@@ -675,7 +689,6 @@ static void next_scene_timer_cb(lv_timer_t * timer)
         else {
             lv_demo_benchmark_summary_display(&summary);
         }
-
     }
     else {
         lv_timer_set_period(timer, scenes[scene_act].scene_time);
@@ -965,5 +978,133 @@ static lv_color_t rnd_color(void)
 {
     return lv_palette_main(rnd_next(0, LV_PALETTE_LAST - 1));
 }
+
+#if 0
+"    <linearGradient id=\"background-3-grad\" x1=\"20%\" x2=\"80%\" y1=\"60%\" y2=\"30%\">"
+"     <stop offset=\"0%\" stop-color=\"#c72f3b\" />"
+"     <stop offset=\"50%\" stop-color=\"#fff\" />"
+"     <stop offset=\"100%\" stop-color=\"#c72f3b\" />"
+"   <animate"
+"     attributeName=\"x1\""
+"     begin=\"0s\""
+"     dur=\"8s\""
+"     from=\"-60%\""
+"     to=\"100%\""
+"     repeatCount=\"indefinite\" />"
+"   <animate"
+"     attributeName=\"x2\""
+"     begin=\"0s\""
+"     dur=\"8s\""
+"     from=\"0%\""
+"     to=\"160%\""
+"     repeatCount=\"indefinite\" />"
+"   </linearGradient>"
+#endif
+
+const char* svg =
+"<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" id=\"background\" width=\"400\" height=\"300\" viewBox=\"0 0 800 600\">"
+"  <defs>"
+"    <linearGradient id=\"background-3-grad\" x1=\"0%\" x2=\"100%\" y1=\"60%\" y2=\"30%\">"
+"     <stop offset=\"0%\" stop-color=\"#c72f3b\">"
+"       <animate"
+"         attributeName=\"offset\""
+"         begin=\"0s\""
+"         dur=\"3s\""
+"         from=\"0%\""
+"         to=\"80%\""
+"         repeatCount=\"indefinite\" />"
+"     </stop>"
+"     <stop offset=\"50%\" stop-color=\"#fff\">"
+"       <animate"
+"         attributeName=\"offset\""
+"         begin=\"0s\""
+"         dur=\"8s\""
+"         from=\"10%\""
+"         to=\"90%\""
+"         repeatCount=\"indefinite\" />"
+"     </stop>"
+"     <stop offset=\"100%\" stop-color=\"#c72f3b\">"
+"       <animate"
+"         attributeName=\"offset\""
+"         begin=\"0s\""
+"         dur=\"3s\""
+"         from=\"20%\""
+"         to=\"100%\""
+"         repeatCount=\"indefinite\" />"
+"     </stop>"
+"   </linearGradient>"
+"  </defs>"
+"  <rect width=\"800\" height=\"600\" x=\"0\" y=\"0\" rx=\"0\" ry=\"0\" fill=\"#000022\"/>"
+"  <g class=\"artwork\" id=\"artwork\" data-name=\"artwork\">"
+"    <circle class=\"gun-charge\" id=\"charging-circle\" cx=\"568\" cy=\"300\" r=\"164\" style=\"fill: #4193f2\"/>"
+"    <g id=\"beam\">"
+"    </g>"
+"    <g class=\"raygun\" id=\"raygun\">"
+"      <path class=\"gun-trigger\" id=\"gun-trigger\" d=\"M463.91,390.15a14,14,0,1,0-18.07,16.12C452.5,434.44,466,439.76,466,439.76l-7.34-35.62A14,14,0,0,0,463.91,390.15Z\" style=\"fill: #86a4b7\"/>"
+"      <path id=\"handle-grip\" d=\"M419,392s-17.61,46-9.75,84c0,0-23.3,1.33-29.26-19,0,0-2.17-43.33,19.51-67Z\" style=\"fill: #86a4b7\"/>"
+"      <path id=\"handle\" d=\"M358.21,391.64c10.73,7.56,29.79,27.68,10.27,67.4a2,2,0,0,0,.08,1.93c2.42,3.88,13,18,38.07,16.32a2,2,0,0,0,.68-3.83c-13.23-5.83-33.71-24.49-2-82.49a2,2,0,0,0-1.75-3H359.35A2,2,0,0,0,358.21,391.64Z\" style=\"fill: #aa1f25\"/>"
+"      <path id=\"fin-background\" d=\"M313.14,233.89l-31.65-47.7A4,4,0,0,1,282,180c14.71-10,61.33-24,139.76,8.16,3.87,1.59,2.4,7.55-1.79,7.57-23.91.07-68.2,5.2-101.26,38.11A4,4,0,0,1,313.14,233.89Z\" style=\"fill: #cab02d\"/>"
+"      <g id=\"gun-tip\">"
+"        <polygon id=\"barrel\" points=\"480 260 480 332 568 300 480 260\" style=\"fill: #fddb00\"/>"
+"        <polygon id=\"barrel-shadow\" points=\"480 300 480 332 568 300 480 300\" style=\"fill: #cab02d\"/>"
+"        <circle id=\"tip\" cx=\"568\" cy=\"300\" r=\"16\" style=\"fill: #c72f3b\"/>"
+"        <circle id=\"tip--highlight\" cx=\"568\" cy=\"292\" r=\"4\" style=\"fill: #ef8c99\"/>"
+"      </g>"
+"      <g id=\"gun-background\">"
+"        <path id=\"background-3\" data-name=\"background\" fill=\"url(#background-3-grad)\" d=\"M489,194.27C345,169.72,288,261,288,300c0,40.49,57,130.08,201,105.53,5.43-.93,10.42-1.8,15-2.64V196.7C499.42,195.86,494.43,195.19,489,194.27Z\"/>"
+"        <rect id=\"background-shadow\" x=\"472\" y=\"340\" width=\"8\" height=\"48\" rx=\"4\" ry=\"4\" style=\"fill: #aa1f25\"/>"
+"        <path d=\"M336.6 301.6C331.6 262.5 360 228.5 400 228.5S468 262.5 463.31 301.6C458.1 265.1 427 246.7 400 246.7S342 265.1 336.6 301.6Z\" style=\"fill: #aa1f25\"/>"
+"        <path id=\"tailfin-shadow\" d=\"M302.55,342.75C315.47,332.66,337,331,337,331l-10-16-34.62,7.21A106.37,106.37,0,0,0,302.55,342.75Z\" style=\"fill: #aa1f25\"/>"
+"        <path d=\"M326.1 250C362.6 210.9 413.5 198.9 463.4 203.5 470.7 204.7 467.4 213.4 462.9 212.5 410.4 203 356.3 219.6 326.1 250\" style=\"fill: #ef8c99\"/>"
+"      </g>"
+"      <g id=\"gun-metal\">"
+"        <rect x=\"488\" y=\"188\" width=\"16\" height=\"224\" rx=\"4\" ry=\"4\" style=\"fill: #b0cce1\"/>"
+"        <circle cx=\"496\" cy=\"196\" r=\"4\" style=\"fill: #fff\"/>"
+"        <circle cx=\"496\" cy=\"403\" r=\"4\" style=\"fill: #86a4b7\"/>"
+"        <rect x=\"492\" y=\"204\" width=\"8\" height=\"48\" rx=\"4\" ry=\"4\" style=\"fill: #fff\"/>"
+"      </g>"
+"      <g id=\"gun-detail\">"
+"        <path style=\"fill: #fddb00\" d=\"M330.2 269.9C336.4 255 358 224 400 224S476 258 476 300 442 376 400 376 337.8 346.5 331 332C330.6 332 330.4 332 330 332L251 332C249 332.1 248.1 329.4 249.8 328.4L286.1 309.4C287.4 308.4 287 306.9 286.4 306.4L276.4 296.4C273.9 293.7 275.5 290.7 277.7 289.8L328.6 270.1C329.1 269.9 329.7 269.8 330.2 269.9ZM400 364C435 364 464 335 464 300S435 236 400 236 336 265 336 300 365 364 400 364Z\"/>"
+"        <path d=\"M327.17,324H292a2,2,0,0,1-.85-3.81L324,306.12a2,2,0,0,1,2.72,1.11L329,321.3A2,2,0,0,1,327.17,324Z\" style=\"fill: #cab02d\"/>"
+"        <g id=\"lightning-bolt\">"
+"          <path d=\"M402,349.53a3.48,3.48,0,0,1-3.52-3.5V314a0.5,0.5,0,0,0-.5-0.5H375a3.5,3.5,0,0,1-3.24-4.83l23-55.89a3.43,3.43,0,0,1,3.21-2.17,3.48,3.48,0,0,1,3.52,3.5V286a0.5,0.5,0,0,0,.5.5h23a3.5,3.5,0,0,1,3.23,4.85l-23,56a3.43,3.43,0,0,1-3.21,2.16h0Z\" style=\"fill: #fff\"/>"
+"          <path d=\"M398,252.11a2,2,0,0,1,2,2V286a2,2,0,0,0,2,2h23a2,2,0,0,1,1.85,2.77l-23,56A1.93,1.93,0,0,1,402,348a2,2,0,0,1-2-2V314a2,2,0,0,0-2-2H375a2,2,0,0,1-1.85-2.76l23-55.89a1.93,1.93,0,0,1,1.83-1.24m0-3a4.9,4.9,0,0,0-4.6,3.1l-23,55.89A5,5,0,0,0,375,315h22v31a5,5,0,0,0,5,5,4.91,4.91,0,0,0,4.59-3.07l23-56A5,5,0,0,0,425,285H403V254.11a5,5,0,0,0-5-5h0Z\" style=\"fill: #c72f3b\"/>"
+"        </g>"
+"      </g>"
+"      <g id=\"fin-foreground\">"
+"        <path d=\"M310.55,249.89l-34.59-33a2.91,2.91,0,0,1-.33-4.26c9.48-10.19,52.08-51.09,133.51-18.22a2.93,2.93,0,0,1-.6,5.63c-20.58,3.55-67.87,13.33-93.84,49.49A2.92,2.92,0,0,1,310.55,249.89Z\" style=\"fill: #fddb00\"/>"
+"        <path d=\"M383,197s-6.06-1-15.21-1.44c-4.57-.24-9.92-0.34-15.62-0.13-2.85.09-5.79,0.3-8.77,0.56s-6,.65-9,1.15c-1.49.25-3,.5-4.45,0.82l-2.2.46-2.16.53c-2.87.7-5.64,1.58-8.28,2.5-1.31.47-2.58,1-3.83,1.49L310,204.59l-3.24,1.75-2.9,1.81L301.3,210c-0.81.57-1.48,1.23-2.16,1.79l-1,.83c-0.3.28-.57,0.57-0.84,0.84l-1.46,1.47c-0.85.92-1.44,1.7-1.88,2.21l-0.66.78-0.16.2a3,3,0,1,1-4.6-3.86l0.11-.13,0.81-.86c0.54-.55,1.27-1.4,2.3-2.39l1.76-1.57c0.32-.28.65-0.59,1-0.88l1.14-.86c0.8-.58,1.6-1.26,2.54-1.84s1.9-1.22,2.92-1.85l3.29-1.78,3.61-1.67,3.9-1.52c1.35-.43,2.72-0.92,4.14-1.33,2.83-.8,5.77-1.54,8.79-2.08l2.27-.41,2.29-.34c1.53-.24,3.07-0.4,4.61-0.56,3.08-.32,6.17-0.5,9.21-0.61s6-.11,8.91,0c5.77,0.14,11.13.57,15.7,1.09C377,195.66,383,197,383,197Z\" style=\"fill: #ccb32c\"/>"
+"      </g>"
+"    </g>"
+"    <g id=\"shockwave\">"
+"      <line class=\"line\" id=\"line-8\" x1=\"568\" y1=\"300\" x2=\"568\" y2=\"156\" style=\"fill: none;stroke: #ffffff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 8px\"/>"
+"      <line class=\"line\" id=\"line-7\" x1=\"568\" y1=\"300\" x2=\"669.82\" y2=\"198.18\" style=\"fill: none;stroke: #ffffff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 8px\"/>"
+"      <line class=\"line\" id=\"line-6\" x1=\"568\" y1=\"300\" x2=\"712\" y2=\"300\" style=\"fill: none;stroke: #ffffff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 8px\"/>"
+"      <line class=\"line\" id=\"line-5\" x1=\"568\" y1=\"300\" x2=\"669.82\" y2=\"401.82\" style=\"fill: none;stroke: #ffffff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 8px\"/>"
+"      <line class=\"line\" id=\"line-4\" x1=\"568\" y1=\"300\" x2=\"568\" y2=\"444\" style=\"fill: none;stroke: #ffffff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 8px\"/>"
+"      <line class=\"line\" id=\"line-3\" x1=\"568\" y1=\"300\" x2=\"466.18\" y2=\"401.82\" style=\"fill: none;stroke: #ffffff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 8px\"/>"
+"      <line class=\"line\" id=\"line-2\" x1=\"568\" y1=\"300\" x2=\"424\" y2=\"300\" style=\"fill: none;stroke: #ffffff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 8px\"/>"
+"      <line class=\"line\" id=\"line-1\" x1=\"568\" y1=\"300\" x2=\"466.18\" y2=\"198.18\" style=\"fill: none;stroke: #ffffff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 8px\"/>"
+"    </g>"
+"  </g>"
+"</svg>";
+
+#include "../../src/libs/svg/lv_svg_direct.h"
+#include <string.h>
+
+static void svg_cb(void)
+{
+
+    lv_obj_t * scr = lv_screen_active();
+    lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    lv_obj_t* svg_obj = lv_svg_direct_create(scr);
+    lv_svg_direct_set_src_data(svg_obj, svg, strlen(svg), (lv_point_t){0, 0}, true);
+
+    // control will start animation!!!
+}
+
+
 
 #endif
