@@ -3,7 +3,7 @@
  *
  */
 
-#ifndef LV_DEMO_BENCHMARK_H
+ #ifndef LV_DEMO_BENCHMARK_H
 #define LV_DEMO_BENCHMARK_H
 
 #ifdef __cplusplus
@@ -51,6 +51,7 @@ LV_FONT_DECLARE(lv_font_benchmark_montserrat_26_aligned)
 typedef struct {
     const char * name;
     void (*create_cb)(void);
+    void (*destruct_cb)(void);
     uint32_t scene_time;
     uint32_t cpu_avg_usage;
     uint32_t fps_avg;
