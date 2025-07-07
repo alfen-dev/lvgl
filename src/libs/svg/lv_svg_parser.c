@@ -150,6 +150,11 @@ static const struct _lv_svg_attr_map {
     {"rotate", 6, LV_SVG_ATTR_ROTATE},
     {"type", 4, LV_SVG_ATTR_TRANSFORM_TYPE},
 #endif
+//#if LV_USE_SVG_STYLE
+    {"style", 5, LV_SVG_ATTR_STYLE},
+    {"clip-path", 9, LV_SVG_ATTR_CLIP_PATH},
+//#endif
+
 };
 
 static const struct _lv_svg_attr_aspect_ratio_map {
@@ -457,6 +462,49 @@ static const char * _parse_number(const char * str, const char * str_end, float 
 
     char * end = NULL;
     *val = strtof(str, &end);
+    return end;
+}
+
+static const char * _parse_percentage(const char * str, const char * str_end, float * val)
+{
+    if(!str) {
+        return NULL;
+    }
+    // skip spaces
+    while((str < str_end) && isspace(*str)) {
+        ++str;
+    }
+
+    if(str == str_end) { 
+        // parse fail
+        return NULL;
+    }
+
+    if ((*str) == '%') {
+        ++str;
+        if (val != NULL) {
+            (*val) *= 0.01F;
+        }
+    }
+    return str;
+}
+
+static const char * _parse_single_number(const char * str, const char * str_end, int* val)
+{
+    if(!str) {
+        return NULL;
+    }
+    // skip loading
+    while((str < str_end) && !_is_number_begin(*str)) {
+        ++str;
+    }
+
+    if(str == str_end) { // parse fail
+        return NULL;
+    }
+
+    char * end = str+1;
+    *val = str[0] - 48;
     return end;
 }
 
@@ -893,6 +941,10 @@ static int _get_path_point_count(char cmd)
         case 'T':
         case 't':
             return 2;
+        case 'A':
+        case 'a':
+            // implement as line to (elliptic arc is not part of SVG Tiny 1.2)
+            return 1;
         default:
             return 0;
     }
@@ -910,6 +962,7 @@ static bool _is_relative_cmd(char cmd)
         case 'q':
         case 't':
         case 'z':
+        case 'a':
             return true;
         case 'M':
         case 'L':
@@ -920,6 +973,7 @@ static bool _is_relative_cmd(char cmd)
         case 'Q':
         case 'T':
         case 'Z':
+        case 'A':
         default:
             return false;
     }
@@ -927,7 +981,18 @@ static bool _is_relative_cmd(char cmd)
 
 static bool _is_path_cmd(char ch)
 {
-    return ch != 0 && strchr("MLHVCSQTZmlhvcsqtz", ch) != NULL;
+    return ch != 0 && strchr("AMLHVCSQTZamlhvcsqtz", ch) != NULL;
+}
+
+static bool lv_is_zero_f(float value)
+{
+    const float d = 0.0001F;
+    return (((-d) < value) && (value < d));
+}
+
+bool lv_fpoint_equal(const lv_fpoint_t* a, const lv_fpoint_t* b)
+{
+    return (lv_is_zero_f(a->x - b->x) && lv_is_zero_f(a->y - b->y));
 }
 
 static void _process_path_value(lv_svg_node_t * node, lv_svg_attr_type_t type, const char * val_start,
@@ -1184,6 +1249,41 @@ static void _process_path_value(lv_svg_node_t * node, lv_svg_attr_type_t type, c
                     cur_point.y = first_point.y;
                 }
                 break;
+            case 'A':
+            case 'a': {
+                    lv_svg_point_t * point = (lv_svg_point_t *)(&path_seg->data);
+
+                    float rx_val = 0.0f;
+                    ptr = _parse_number(ptr, val_end, &rx_val);
+                    float ry_val = 0.0f;
+                    ptr = _parse_number(ptr, val_end, &ry_val);
+                    float x_axis_rotation_val = 0.0f;
+                    ptr = _parse_number(ptr, val_end, &x_axis_rotation_val);
+                    int larg_arc_flag_val = 0;
+                    ptr = _parse_single_number(ptr, val_end, &larg_arc_flag_val);
+                    int sweep_flag_val = 0;
+                    ptr = _parse_single_number(ptr, val_end, &sweep_flag_val);
+                    float x_val = 0.0f;
+                    ptr = _parse_number(ptr, val_end, &x_val);
+                    float y_val = 0.0f;
+                    ptr = _parse_number(ptr, val_end, &y_val);
+
+                    if(relative) {
+                        x_val += cur_point.x;
+                        y_val += cur_point.y;
+                    }
+
+                    path_seg->cmd = LV_SVG_PATH_CMD_LINE_TO;
+                    point->x = x_val;
+                    point->y = y_val;
+                    cur_point.x = x_val;
+                    cur_point.y = y_val;
+                }
+                break;
+            default: {
+                    LV_LOG_WARN(" Unsupported %c", ch);
+                }
+                break;
         }
 
         if(!ptr) break;
@@ -1379,6 +1479,7 @@ static void _process_paint_attrs(lv_svg_node_t * node, lv_svg_attr_type_t type, 
     else if(type == LV_SVG_ATTR_GRADIENT_STOP_OFFSET) {
         float val = 0.0f;
         val_start = _parse_number(val_start, val_end, &val);
+        val_start = _parse_percentage(val_start, val_end, &val);
         attr->value.fval = val;
     }
 }
@@ -1633,6 +1734,8 @@ static const char * _parse_clock_time(const char * str, const char * str_end, fl
                 *val = roundf(*val);
             }
             else {
+                // len < 2 or len <= 1
+                // if (str[0] == 's'))
                 *val = roundf(*val * 1000.0f);
             }
         }
@@ -1882,6 +1985,110 @@ static void _parse_anim_value(lv_svg_node_t * node, lv_svg_attr_t * attr, const 
     }
 }
 
+typedef struct word_t_ {
+    const char * start;
+    const char * end;
+} word_t;
+
+static const char * _skip_space_reverse(const char * str, const char * str_start)
+{
+    while((str > str_start) && isspace(*(str-1))) {
+        --str;
+    }
+    return str;
+}
+
+static int _parse_style_value_list(word_t* line, word_t* key, word_t* value)
+{
+    int result = 0;
+    line->start = _skip_space(line->start, line->end);
+    const char* ptr = line->start;
+    key->start = ptr;
+    key->end = ptr;
+    value->start = ptr;
+    value->end = ptr;
+    
+    while ((ptr < line->end) && (*ptr != ';')) {
+        if ((key->start == key->end) && ((*ptr == ':') || (*ptr == '='))) {
+            key->end = _skip_space_reverse(ptr, key->start);
+            ptr++;
+            ptr = _skip_space(ptr, line->end);
+            value->start = ptr;
+            value->end = value->start;
+            result += ((key->start != key->end) ? 1 : 0);
+        }
+        else {
+            ++ptr;
+        }
+    }
+    if (key->start == key->end) {
+        key->end = _skip_space_reverse(ptr, key->start);
+    }
+    else if (key->start != key->end) {
+        value->end = _skip_space_reverse(ptr, value->start);
+        result += ((value->start != value->end) ? 1 : 0);
+    }
+
+    if (ptr < line->end) {
+        // prevent line->start > line->end
+        ++ptr;
+    }
+    line->start = ptr;
+    return result;
+}
+
+
+
+static void _process_style_attr_options(lv_svg_node_t * node, lv_svg_attr_type_t type, const char * val_start,
+                                       const char * val_end)
+{
+    CHECK_AND_RESIZE_ATTRS(node->attrs);
+
+    //node->attrs.size++;
+    //lv_svg_attr_t * attr = lv_array_at(&node->attrs, node->attrs.size - 1);
+    //attr->id = type;
+    //attr->val_type = LV_SVG_ATTR_VALUE_DATA;
+    //attr->class_type = LV_SVG_ATTR_VALUE_INITIAL;
+
+    word_t line = {val_start, val_end};
+    word_t key;
+    word_t value;
+
+    while (line.start < line.end) {
+
+        int result = _parse_style_value_list(&line, &key, &value);
+        if (result > 0) {
+            lv_svg_attr_type_t type = _get_svg_attr_type(key.start, key.end);
+            switch(type) {
+                case LV_SVG_ATTR_FILL:
+                case LV_SVG_ATTR_STROKE:
+                    _process_paint(node, type, value.start, value.end);
+                    break;
+                case LV_SVG_ATTR_VIEWPORT_FILL:
+                case LV_SVG_ATTR_SOLID_COLOR:
+                case LV_SVG_ATTR_GRADIENT_STOP_COLOR:
+                    LV_LOG_WARN("   Unknown/unsupported fill attribute <%s>\n", _svg_attr_map[type - 1].name);
+                    break;
+                case LV_SVG_ATTR_STROKE_LINECAP:
+                case LV_SVG_ATTR_STROKE_MITER_LIMIT:
+                case LV_SVG_ATTR_STROKE_WIDTH:
+                    _process_paint_attrs(node, type, value.start, value.end);
+                    break;
+                case LV_SVG_ATTR_FILL_RULE:
+                case LV_SVG_ATTR_STROKE_LINEJOIN:
+                case LV_SVG_ATTR_STROKE_DASH_OFFSET:
+                case LV_SVG_ATTR_GRADIENT_STOP_OFFSET:
+                    LV_LOG_WARN("   Unknown/unsupported fill attribute <%s>\n", _svg_attr_map[type - 1].name);
+                    break;
+                default:
+                    LV_LOG_WARN("   Unknown/unsupported fill attribute <%s>\n", _svg_attr_map[type - 1].name);
+                    break;
+
+            }
+        }
+
+    }
+}
 struct _parse_value_list_context {
     uint32_t mem_size;
     uint32_t list_count;
@@ -2188,6 +2395,10 @@ static void _process_attrs_tag(_lv_svg_parser_t * parser, lv_svg_node_t * node, 
             case LV_SVG_ATTR_TRANSFORM_TYPE:
                 _process_anim_attr_options(node, type, tok_attr->value_start, tok_attr->value_end);
                 break;
+            case LV_SVG_ATTR_STYLE:
+                _process_style_attr_options(node, type, tok_attr->value_start, tok_attr->value_end);
+                break;
+
             case LV_SVG_ATTR_ATTRIBUTE_TYPE:
 #endif
             case LV_SVG_ATTR_DISPLAY:

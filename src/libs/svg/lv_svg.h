@@ -135,6 +135,10 @@ enum {
     LV_SVG_ATTR_ROTATE,
     LV_SVG_ATTR_TRANSFORM_TYPE,
 #endif
+//#if LV_USE_SVG_STYLE
+    LV_SVG_ATTR_STYLE,
+    LV_SVG_ATTR_CLIP_PATH,
+//#endif    
 };
 typedef uint8_t lv_svg_attr_type_t;
 
