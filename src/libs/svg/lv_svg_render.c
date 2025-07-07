@@ -1235,12 +1235,12 @@ static void _init_gradient(lv_svg_render_obj_t * obj, const lv_svg_node_t * node
                     }
                     break;
                 case LV_SVG_ATTR_GRADIENT_STOP_OPACITY: {
-                        stop_opa = (lv_opa_t)(attr->value.fval * 255.0f);
+                        stop_opa = (lv_opa_t)(LV_CLAMP(0.0F, 255.0F, roundf(attr->value.fval * 255.0f)));
                         is_stop = true;
                     }
                     break;
                 case LV_SVG_ATTR_GRADIENT_STOP_OFFSET: {
-                        stop_frac = (uint8_t)(attr->value.fval * 255.0f);
+                        stop_frac = (uint8_t)(LV_CLAMP(0.0F, 255.0F, roundf(attr->value.fval * 255.0f)));
                         is_stop = true;
                     }
                     break;
