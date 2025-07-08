@@ -85,6 +85,7 @@ static lv_obj_t * card_create(void);
 static void svg_cb(void);
 
 extern void orb_waves_cb(void);
+extern void orb_waves_full_cb(void);
 extern void orb_waves_end_cb(void);
 
 static void empty_screen_cb(void)
@@ -471,6 +472,7 @@ static void widgets_demo_cb(void)
 
 static lv_demo_benchmark_scene_dsc_t scenes[] = {
     {.name = "Waves Orb",                  .scene_time =  3000, .create_cb = orb_waves_cb                , .destruct_cb = orb_waves_end_cb},
+    {.name = "Waves Orb (full)",           .scene_time =  3000, .create_cb = orb_waves_full_cb           , .destruct_cb = orb_waves_end_cb},
     {.name = "Animated SVG",               .scene_time =  3000, .create_cb = svg_cb                      , .destruct_cb = NULL},
     {.name = "Empty screen",               .scene_time =  3000, .create_cb = empty_screen_cb             , .destruct_cb = NULL},
     {.name = "Moving wallpaper",           .scene_time =  3000, .create_cb = moving_wallpaper_cb         , .destruct_cb = NULL},
