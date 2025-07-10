@@ -81,6 +81,13 @@ void lv_svg_render_init(const lv_svg_render_hal_t * hal);
 lv_svg_render_obj_t * lv_svg_render_create(const lv_svg_node_t * svg_doc);
 
 /**
+ * @brief Fix order for processing of viewbox in lv_svg_render.c:_set_viewport_attr
+ * Before calling lv_svg_render_create on every tick,
+ * lv_svg_render_fix has to be called once.
+ */
+void lv_svg_render_fix(lv_svg_node_t * svg_doc);
+
+/**
  * @brief Delete an SVG render object
  * @param render pointer to the SVG render object to delete
  */

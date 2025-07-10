@@ -42,6 +42,9 @@ const lv_color_filter_dsc_t lv_color_filter_shade = {.filter_cb = lv_color_filte
 
 uint8_t lv_color_format_get_bpp(lv_color_format_t cf)
 {
+    // Duplicates
+    // #define LV_COLOR_FORMAT_GET_BPP(cf) ( ...
+    
     switch(cf) {
         case LV_COLOR_FORMAT_I1:
         case LV_COLOR_FORMAT_A1:
@@ -131,6 +134,11 @@ uint16_t lv_color_to_u16(lv_color_t color)
 uint32_t lv_color_to_u32(lv_color_t color)
 {
     return (uint32_t)((uint32_t)0xff << 24) + (color.red << 16) + (color.green << 8) + (color.blue);
+}
+
+uint32_t lv_color_32_to_u32(lv_color32_t color)
+{
+    return (uint32_t)(((uint32_t)color.alpha) << 24) + (color.red << 16) + (color.green << 8) + (color.blue);
 }
 
 lv_color_t lv_color_lighten(lv_color_t c, lv_opa_t lvl)
@@ -260,6 +268,8 @@ lv_color_hsv_t lv_color_to_hsv(lv_color_t c)
 
 uint8_t lv_color_format_get_size(lv_color_format_t cf)
 {
+    // Duplicates
+    // #define LV_COLOR_FORMAT_GET_SIZE(cf) ((LV_COLOR_FORMAT_GET_BPP(cf) + 7) >> 3)
     return (lv_color_format_get_bpp(cf) + 7) >> 3;
 }
 

@@ -51,9 +51,10 @@ lv_obj_t  * lv_lottie_create(lv_obj_t * parent);
  * @param obj       pointer to a lottie widget
  * @param w         width of the animation and buffer
  * @param h         height of the animation and buffer
- * @param buf       a static buffer with `width x height x 4` byte size
+ * @param buf       a static buffer with `width x height x pixel_size_in_bytes` byte size
+ * @param lvColorFormat used to set the pixel_size_in_bytes (2 or 4 bytes per pixel)
  */
-void lv_lottie_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf);
+void lv_lottie_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf, lv_color_format_t lvColorFormat);
 
 /**
  * Set a draw buffer for the animation. It also defines the size of the animation
@@ -63,12 +64,20 @@ void lv_lottie_set_buffer(lv_obj_t * obj, int32_t w, int32_t h, void * buf);
 void lv_lottie_set_draw_buf(lv_obj_t * obj, lv_draw_buf_t * draw_buf);
 
 /**
- * Set the source for the animation as an array
+ * Set the source for the lottie animation as an array
  * @param obj       pointer to a lottie widget
  * @param src       the lottie animation converted to an nul terminated array
  * @param src_size  size of the source array in bytes
  */
 void lv_lottie_set_src_data(lv_obj_t * obj, const void * src, size_t src_size);
+
+/**
+ * Set the source for the svg figure as an array
+ * @param obj       pointer to a lottie widget
+ * @param src       the svg figure converted to an nul terminated array
+ * @param src_size  size of the source array in bytes
+ */
+void lv_lottie_set_svg_src_data(lv_obj_t * obj, const void * src, size_t src_size);
 
 /**
  * Set the source for the animation as a path.
