@@ -332,21 +332,21 @@ lv_color_t lv_color_hex3(uint32_t c);
 /**
  * Convert am RGB888 color to RGB565 stored in `uint16_t`
  * @param color     and RGB888 color
- * @return          `color` as RGB565 on `uin16_t`
+ * @return          `color` as RGB565 on `uint16_t`
  */
 uint16_t lv_color_to_u16(lv_color_t color);
 
 /**
  * Convert am RGB888 color to XRGB8888 stored in `uint32_t`
  * @param color     and RGB888 color
- * @return          `color` as XRGB8888 on `uin32_t` (the alpha channel is always set to 0xFF [solid])
+ * @return          `color` as XRGB8888 on `uint32_t` (the alpha channel is always set to 0xFF [solid])
  */
 uint32_t lv_color_to_u32(lv_color_t color);
 
 /**
  * Convert am ARGB888 color to XRGB8888 stored in `uint32_t`
  * @param color     and ARGB888 color
- * @return          `color` as XRGB8888 on `uin32_t` (the alpha channel is taken from the color)
+ * @return          `color` as XRGB8888 on `uint32_t` (the alpha channel is taken from the color)
  */
 uint32_t lv_color_32_to_u32(lv_color32_t color);
 
