@@ -489,7 +489,7 @@ void lv_vector_clear_area(lv_vector_dsc_t * dsc, const lv_area_t * rect);
  * Draw all the vector graphic paths
  * @param dsc           pointer to a vector graphic descriptor
  */
-void lv_draw_vector(lv_vector_dsc_t * dsc);
+void lv_draw_vector(lv_vector_dsc_t * dsc, const lv_area_t * coords);
 
 /* Traverser for task list */
 typedef void (*vector_draw_task_cb)(void * ctx, const lv_vector_path_t * path, const lv_vector_draw_dsc_t * dsc);

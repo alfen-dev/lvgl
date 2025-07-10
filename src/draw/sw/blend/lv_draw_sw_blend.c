@@ -74,7 +74,10 @@ void lv_draw_sw_blend(lv_draw_task_t * t, const lv_draw_sw_blend_dsc_t * blend_d
     if(blend_dsc->mask_buf && blend_dsc->mask_res == LV_DRAW_SW_MASK_RES_TRANSP) return;
 
     lv_area_t blend_area;
-    if(!lv_area_intersect(&blend_area, blend_dsc->blend_area, &t->clip_area)) return;
+    if(!lv_area_intersect(&blend_area, blend_dsc->blend_area, &t->clip_area)) {
+        // No intersection
+        return;
+    }
 
     LV_PROFILER_DRAW_BEGIN;
     lv_layer_t * layer = t->target_layer;

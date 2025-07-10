@@ -370,7 +370,7 @@ static void svg_draw(lv_layer_t * layer, const lv_image_decoder_dsc_t * dsc, con
     }
     lv_vector_dsc_set_transform(ctx, &matrix);
     lv_draw_svg_render(ctx, list);
-    lv_draw_vector(ctx);
+    lv_draw_vector(ctx, coords);
     lv_vector_dsc_delete(ctx);
 
     LV_PROFILER_DRAW_END;

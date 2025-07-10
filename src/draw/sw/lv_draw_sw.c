@@ -420,7 +420,7 @@ static void execute_drawing(lv_draw_task_t * t)
             break;
 #if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
         case LV_DRAW_TASK_TYPE_VECTOR:
-            lv_draw_sw_vector(t, t->draw_dsc, lv_color32_make(0, 0, 0, 0)/*Transparent or black*/);
+            lv_draw_sw_vector(t, t->draw_dsc, &t->area, lv_color32_make(0, 0, 0, 0)/*Transparent or black*/);
             break;
 #endif
         default:

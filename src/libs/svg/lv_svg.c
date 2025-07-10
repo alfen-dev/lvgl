@@ -568,18 +568,6 @@ static void svg_update_draw(lv_svg_t* svg, int32_t v)
             .user_data = NULL,
         };
 
-        lv_area_t viewPort = {0, 0, 0 + img->w, 0 + img->h};
-        lv_draw_vector_set_viewport_tvg_canvas(&viewPort, svg->tvg_canvas);
-
-        lv_vector_dsc_t* dsc = lv_vector_dsc_create(&dummyLayer);
-
-        lv_svg_render_obj_t* list = lv_svg_render_create(svg->doc);
-        lv_draw_svg_render(dsc, list);
-
-        lv_draw_vector_tvg_canvas(0, 0, &(dsc->tasks), svg->tvg_canvas, draw_buf->header.cf, color);
-        
-        lv_svg_render_delete(list);
-        lv_vector_dsc_delete(dsc);
     }
     lv_obj_invalidate(obj);
 

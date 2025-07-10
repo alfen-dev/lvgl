@@ -152,16 +152,13 @@ void lv_draw_sw_transform(const lv_area_t * dest_area, const void * src_buf,
  * @param t             pointer to a draw task
  * @param dsc           the draw descriptor
  */
-void lv_draw_sw_vector(lv_draw_task_t * t, lv_draw_vector_task_dsc_t * dsc, lv_color32_t color);
+void lv_draw_sw_vector(lv_draw_task_t * t, lv_draw_vector_task_dsc_t * dsc, const lv_area_t * coords, lv_color32_t color);
 
 #if LV_USE_THORVG_EXTERNAL
     #include <thorvg_capi.h>
 #else
     #include "../../libs/thorvg/src/bindings/capi/thorvg_capi.h"
 #endif
-
-void lv_draw_vector_set_viewport_tvg_canvas(lv_area_t* area, Tvg_Canvas * canvas);
-
 
 Tvg_Colorspace lv_lvgl_to_tvg(lv_color_format_t lvColorFormat);
 

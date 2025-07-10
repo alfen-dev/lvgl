@@ -2609,7 +2609,8 @@ void lv_draw_svg(lv_layer_t * layer, const lv_svg_node_t * svg_doc)
     lv_vector_dsc_t * dsc = lv_vector_dsc_create(layer);
     lv_svg_render_obj_t * list = lv_svg_render_create(svg_doc);
     lv_draw_svg_render(dsc, list);
-    lv_draw_vector(dsc);
+    lv_area_t coords = {0, 0, LV_HOR_RES, LV_VER_RES};
+    lv_draw_vector(dsc, &coords);
     lv_svg_render_delete(list);
     lv_vector_dsc_delete(dsc);
 }

@@ -494,6 +494,12 @@ void * lv_draw_layer_alloc_buf(lv_layer_t * layer)
 
 void * lv_draw_layer_go_to_xy(lv_layer_t * layer, int32_t x, int32_t y)
 {
+    if ((x < 0) || 
+        (y < 0) ||
+        (x > layer->draw_buf->header.w) ||
+        (y > layer->draw_buf->header.h)) {
+        return lv_draw_buf_goto_xy(layer->draw_buf, 0, 0);
+    }
     return lv_draw_buf_goto_xy(layer->draw_buf, x, y);
 }
 
