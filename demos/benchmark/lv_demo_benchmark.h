@@ -117,6 +117,8 @@ void lv_demo_benchmark_set_end_cb(lv_demo_benchmark_on_end_cb_t cb);
  */
 void lv_demo_benchmark_summary_display(const lv_demo_benchmark_summary_t * summary);
 
+void lv_demo_benchmark_add(const lv_demo_benchmark_scene_dsc_t* scene);
+
 /**********************
  *      MACROS
  **********************/

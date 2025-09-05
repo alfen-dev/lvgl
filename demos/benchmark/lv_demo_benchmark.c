@@ -84,10 +84,6 @@ static lv_obj_t * card_create(void);
 
 static void svg_cb(void);
 
-extern void orb_waves_cb(void);
-extern void orb_waves_full_cb(void);
-extern void orb_waves_end_cb(void);
-
 static void empty_screen_cb(void)
 {
     color_anim(lv_screen_active());
@@ -470,9 +466,7 @@ static void widgets_demo_cb(void)
  *  STATIC VARIABLES
  **********************/
 
-static lv_demo_benchmark_scene_dsc_t scenes[] = {
-    {.name = "Waves Orb",                  .scene_time =  3000, .create_cb = orb_waves_cb                , .destruct_cb = orb_waves_end_cb},
-    {.name = "Waves Orb (full)",           .scene_time =  3000, .create_cb = orb_waves_full_cb           , .destruct_cb = orb_waves_end_cb},
+static const lv_demo_benchmark_scene_dsc_t scenes_[] = {
     {.name = "Animated SVG",               .scene_time =  3000, .create_cb = svg_cb                      , .destruct_cb = NULL},
     {.name = "Empty screen",               .scene_time =  3000, .create_cb = empty_screen_cb             , .destruct_cb = NULL},
     {.name = "Moving wallpaper",           .scene_time =  3000, .create_cb = moving_wallpaper_cb         , .destruct_cb = NULL},
@@ -495,6 +489,9 @@ static lv_demo_benchmark_scene_dsc_t scenes[] = {
 
     {.name = "", .create_cb = NULL, .destruct_cb = NULL}
 };
+
+#define MAX_NR_SCENES 30
+static lv_demo_benchmark_scene_dsc_t scenes[MAX_NR_SCENES];
 
 static uint32_t scene_act;
 static uint32_t rnd_act;
@@ -527,6 +524,13 @@ void lv_demo_benchmark(void)
     lv_obj_set_style_text_color(title, lv_color_black(), 0);
     lv_obj_set_width(title, lv_pct(100));
 
+    lv_memzero(scenes, MAX_NR_SCENES*sizeof(lv_demo_benchmark_scene_dsc_t));
+    size_t i = 0;
+    for(; scenes_[i].create_cb; i++) {
+        scenes[i] = scenes_[i];
+    }
+    scenes[i] = scenes_[i];
+
     load_scene(scene_act);
 
     lv_timer_create(next_scene_timer_cb, scenes[0].scene_time, NULL);
@@ -540,6 +544,17 @@ void lv_demo_benchmark(void)
 #else
     lv_label_set_text(title, "LV_USE_PERF_MONITOR is not enabled");
 #endif
+}
+
+void lv_demo_benchmark_add(const lv_demo_benchmark_scene_dsc_t* scene)
+{
+    size_t i = 0;
+    while(scenes[i].create_cb != NULL) {
+        i++;
+    }
+    scenes[i] = *scene;
+    i++;
+    scenes[i] = (lv_demo_benchmark_scene_dsc_t){.create_cb = NULL};
 }
 
 void lv_demo_benchmark_set_end_cb(lv_demo_benchmark_on_end_cb_t cb)
@@ -715,7 +730,8 @@ static void sysmon_perf_observer_cb(lv_observer_t * observer, lv_subject_t * sub
     const lv_sysmon_perf_info_t * info = lv_subject_get_pointer(subject);
     char scene_name[64];
 
-    if(scenes[scene_act].name[0] != '\0') {
+    if((scenes[scene_act].name != NULL) && 
+       (scenes[scene_act].name[0] != '\0')) {
         lv_snprintf(scene_name, sizeof(scene_name), "%s: ", scenes[scene_act].name);
     }
     else {
