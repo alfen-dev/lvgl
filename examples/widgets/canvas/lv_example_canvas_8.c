@@ -6,6 +6,7 @@
 #define CANVAS_WIDTH  150
 #define CANVAS_HEIGHT 150
 
+#if 0
 /**
  * Draw a path to the canvas
  */
@@ -54,4 +55,5 @@ void lv_example_canvas_8(void)
 
 #endif /*LV_USE_VECTOR_GRAPHIC*/
 
+#endif
 #endif

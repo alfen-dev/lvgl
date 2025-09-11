@@ -54,11 +54,11 @@ static const char svg_data2[] =
 "</svg>";
 
 #if SVG_1
-    lv_svg_direct_set_src_data(obj, svg_data, sizeof(svg_data) / sizeof(char), 400, true);
+    lv_svg_direct_set_src_data(obj, svg_data, sizeof(svg_data) / sizeof(char), (lv_point_t){400, 400}, true);
     lv_obj_set_size(obj, 300, 300);
 #endif    
 #if SVG_2
-    lv_svg_direct_set_src_data(obj2, svg_data2, sizeof(svg_data2) / sizeof(char), 300, true);
+    lv_svg_direct_set_src_data(obj2, svg_data2, sizeof(svg_data2) / sizeof(char), (lv_point_t){300, 300}, true);
     lv_obj_set_size(obj2, 200, 200);
 #endif    
     // bug: left is clipped at twice the position reducing the surface width so

@@ -284,20 +284,20 @@ if(CONFIG_LV_BUILD_EXAMPLES)
 
     message(STATUS "Enabling the building of examples")
     
-    # add_library(lvgl_examples ${EXAMPLE_SOURCES} ${THORVG_EXAMPLE_SOURCES})
-    # add_library(lvgl::examples ALIAS lvgl_examples)
-    # target_include_directories(lvgl_examples SYSTEM PUBLIC ${LVGL_ROOT_DIR}/examples)
-    # set_target_properties(lvgl_examples PROPERTIES COMPILE_DEFINITIONS "${COMP_DEF}")
-    # 
-    # # This tells cmake to link lvgl with lvgl_examples
-    # # PUBLIC allows code linking with LVGL to also use the library
-    # # The linker will resolve all dependencies when dynamic linking 
-    # target_link_libraries(lvgl PUBLIC lvgl_examples)
-    # 
-    # # During static linking, we need to create a cyclic dependency as the examples also needs lvgl
-    # if (NOT BUILD_SHARED_LIBS)
-    #     target_link_libraries(lvgl_examples PRIVATE lvgl)
-    # endif()
+    add_library(lvgl_examples ${EXAMPLE_SOURCES} ${THORVG_EXAMPLE_SOURCES})
+    add_library(lvgl::examples ALIAS lvgl_examples)
+    target_include_directories(lvgl_examples SYSTEM PUBLIC ${LVGL_ROOT_DIR}/examples)
+    set_target_properties(lvgl_examples PROPERTIES COMPILE_DEFINITIONS "${COMP_DEF}")
+    
+    # This tells cmake to link lvgl with lvgl_examples
+    # PUBLIC allows code linking with LVGL to also use the library
+    # The linker will resolve all dependencies when dynamic linking 
+    target_link_libraries(lvgl PUBLIC lvgl_examples)
+    
+    # During static linking, we need to create a cyclic dependency as the examples also needs lvgl
+    if (NOT BUILD_SHARED_LIBS)
+        target_link_libraries(lvgl_examples PRIVATE lvgl)
+    endif()
 
 endif()
 

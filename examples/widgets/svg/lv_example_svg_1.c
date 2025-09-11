@@ -76,7 +76,7 @@ void lv_example_lvgl_svg_1(void)
 ;
 #endif
 
-    lv_svg_set_src_data(obj, svg_data, sizeof(svg_data) / sizeof(char), 200, 200);
+    lv_svg_set_src_data(obj, svg_data, sizeof(svg_data) / sizeof(char), (lv_point_t){200, 200});
 
     lv_obj_center(obj);
     //lv_obj_align(obj, LV_ALIGN_TOP_LEFT, 0, 0);
