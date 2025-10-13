@@ -46,20 +46,6 @@
  *   GLOBAL FUNCTIONS
  **********************/
 
-
-
-static lv_svg_node_t* lv_svg_node_has_child_of_type(lv_svg_node_t* node, lv_svg_tag_t type)
-{
-    lv_svg_node_t* node_type = NULL;
-    lv_tree_node_t* tree_node = (lv_tree_node_t*)node;
-    for(uint32_t i = 0; i < tree_node->child_cnt; i++) {
-        if (((lv_svg_node_t*)tree_node->children[i])->type == type) {
-            node_type = (lv_svg_node_t*)tree_node->children[i];
-        }
-    }
-    return node_type;
-}
-
 static bool lv_svg_node_animate_attr_value(lv_svg_node_t* node, lv_svg_attr_type_t attr_id, float* value)
 {
     bool found = false;

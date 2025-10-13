@@ -55,7 +55,6 @@
 
 static void lv_tvg_canvas_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
 static void lv_tvg_canvas_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
-static void lv_tvg_canvas_draw(lv_obj_t* obj, lv_event_t* e);
 
 
 /**********************

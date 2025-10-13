@@ -503,7 +503,7 @@ static const char * _parse_single_number(const char * str, const char * str_end,
         return NULL;
     }
 
-    char * end = str+1;
+    const char * end = str+1;
     *val = str[0] - 48;
     return end;
 }
